@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KOLUMN v0.8</title>
+<title>KOLUMN v0.9</title>
 <!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-TRP1QX4878"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-TRP1QX4878');</script>
@@ -574,56 +574,6 @@
     animation: pauseBlink 2s ease-in-out infinite;
   }
 
-  /* Start screen */
-  .start-overlay {
-    display: flex;
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: var(--bg);
-    z-index: 600;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .start-overlay.hide { display: none; }
-
-  .start-title {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 48px;
-    font-weight: 900;
-    letter-spacing: 12px;
-    color: var(--glow);
-    text-shadow: 0 0 40px color-mix(in srgb, var(--glow) 50%, transparent);
-    margin-bottom: 40px;
-  }
-
-  .start-btn {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: 6px;
-    border: 2px solid var(--glow);
-    border-radius: 6px;
-    background: transparent;
-    color: var(--glow);
-    padding: 16px 48px;
-    cursor: pointer;
-    transition: all 0.2s;
-    animation: startPulse 2s ease-in-out infinite;
-  }
-
-  .start-btn:hover {
-    background: color-mix(in srgb, var(--glow) 15%, transparent);
-    box-shadow: 0 0 24px color-mix(in srgb, var(--glow) 40%, transparent);
-    transform: scale(1.05);
-  }
-
-  @keyframes startPulse {
-    0%, 100% { box-shadow: 0 0 8px color-mix(in srgb, var(--glow) 20%, transparent); }
-    50% { box-shadow: 0 0 20px color-mix(in srgb, var(--glow) 40%, transparent); }
-  }
-
   @keyframes pauseBlink {
     0%, 100% { opacity: 0.4; }
     50% { opacity: 0.8; }
@@ -698,12 +648,6 @@
       <button class="btn" onclick="resetGame()">&#8635;</button>
     </div>
   </div>
-</div>
-
-<!-- Start Screen -->
-<div class="start-overlay" id="startOverlay">
-  <div class="start-title">KOLUMN</div>
-  <button class="start-btn" id="startBtn" onclick="startGame()">START</button>
 </div>
 
 <!-- Pause Blackout -->
@@ -940,9 +884,23 @@ function startTimer() { startTimerFrom(0); }
 // ===== DEBUG MODE =====
 const debugMode = new URLSearchParams(window.location.search).get('debug') === '17';
 
-// ===== PAUSE =====
+// ===== START / PAUSE =====
+let gameStarted = false;
+
 function togglePause() {
   if (gameOver) return;
+
+  // First press = start game
+  if (!gameStarted) {
+    gameStarted = true;
+    paused = false;
+    document.getElementById('pauseBtn').textContent = '\u23f8';
+    document.getElementById('pauseBtn').style.color = '';
+    document.getElementById('dropBtn').disabled = false;
+    startTimer();
+    return;
+  }
+
   if (!paused) {
     paused = true;
     pausedElapsed = Date.now() - timerStart;
@@ -1247,19 +1205,21 @@ function updateStats() {
 // ===== INIT =====
 function resetGame() {
   document.getElementById('gameOverlay').classList.remove('show');
+  document.getElementById('pauseBlackout').classList.remove('show');
   columns = [];
   for (let c = 0; c < COLS; c++) columns.push([]);
   score = 0; totalDrops = 0; totalCleared = 0; totalChains = 0;
-  gameOver = false; busy = false; paused = false;
+  gameOver = false; busy = false; paused = true;
   bombUsed = false;
+  gameStarted = false;
   document.getElementById('bombVal').textContent = '\u25b2';
   document.getElementById('bombVal').className = 'panel-value bomb-ready';
-  document.getElementById('pauseBtn').textContent = '\u23f8';
-  document.getElementById('pauseBtn').style.color = '';
+  document.getElementById('pauseBtn').textContent = '\u25b6';
+  document.getElementById('pauseBtn').style.color = 'var(--glow)';
+  document.getElementById('dropBtn').disabled = true;
   falling = generate();
   nextPiece = generate();
   renderAll();
-  startTimer();
 }
 
 // ===== THEME =====
@@ -1278,28 +1238,10 @@ document.addEventListener('keydown', e => {
   else if (e.key === 'ArrowRight') { e.preventDefault(); rotate(1); }
   else if (e.key === ' ' || e.key === 'ArrowDown') { e.preventDefault(); drop(); }
   else if (e.key === 'p' || e.key === 'P') { e.preventDefault(); togglePause(); }
-  else if (e.key === 'Enter' && !gameStarted) { e.preventDefault(); startGame(); }
 });
 
-// ===== START SCREEN =====
-let gameStarted = false;
-
-function startGame() {
-  document.getElementById('startOverlay').classList.add('hide');
-  gameStarted = true;
-  resetGame();
-}
-
-function initScreen() {
-  columns = [];
-  for (let c = 0; c < COLS; c++) columns.push([]);
-  falling = generate();
-  nextPiece = generate();
-  renderAll();
-}
-
 setTheme('ocean');
-initScreen();
+resetGame();
 </script>
 </body>
 </html>
