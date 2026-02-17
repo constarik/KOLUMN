@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KOLUMN v1.0</title>
+<title>KOLUMN v1.1</title>
 <!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-TRP1QX4878"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-TRP1QX4878');</script>
@@ -24,6 +24,7 @@
     --text: #c0d8e8;
     --text-dim: #5a8098;
     --cell-size: 48px;
+    --cell-size-mobile: 56px;
     --gap: 3px;
     --grid-line: rgba(0,212,232,0.03);
     --scanline: rgba(0,30,60,0.06);
@@ -589,6 +590,106 @@
     pointer-events: none;
     z-index: -1;
   }
+
+  /* Leaderboard */
+  .lb-list {
+    list-style: none;
+    margin: 8px 0 0;
+    padding: 0;
+  }
+
+  .lb-list li {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+    padding: 3px 0;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .lb-list li .lb-rank {
+    color: var(--text-dim);
+    width: 18px;
+  }
+
+  .lb-list li .lb-score {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    color: var(--glow);
+  }
+
+  .lb-list li .lb-date {
+    color: var(--text-dim);
+    font-size: 10px;
+  }
+
+  .lb-list li.lb-new {
+    color: #fff;
+  }
+
+  .lb-list li.lb-new .lb-score {
+    color: #fff;
+    text-shadow: 0 0 8px rgba(255,255,255,0.4);
+  }
+
+  /* Mobile responsive */
+  @media (max-width: 600px) {
+    :root, [data-theme="ocean"], [data-theme="purple"], [data-theme="slate"], [data-theme="warm"] {
+      --cell-size: var(--cell-size-mobile);
+      --gap: 2px;
+    }
+
+    body {
+      align-items: flex-start;
+      padding-top: 8px;
+    }
+
+    .game-container {
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .left-panel {
+      flex-direction: row;
+      width: auto;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .panel-box {
+      padding: 6px 10px;
+      min-width: 60px;
+    }
+
+    .panel-value { font-size: 16px; }
+    .panel-value.score { font-size: 16px; }
+    .panel-value.small { font-size: 12px; }
+
+    .controls {
+      gap: 4px;
+    }
+
+    .btn { padding: 10px 12px; font-size: 13px; }
+    .btn.primary { padding: 10px 18px; }
+    .btn-rotate { font-size: 20px; padding: 8px 14px; }
+
+    .info { display: none; }
+  }
+
+  /* Touch zone overlay - covers grid + falling area */
+  .touch-zone {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 10;
+    touch-action: none;
+  }
+
+  @media (min-width: 601px) {
+    .touch-zone { display: none; }
+  }
 </style>
 </head>
 <body>
@@ -636,9 +737,11 @@
     </div>
     <div class="mult-display high" id="multDisplay">&times;10.0</div>
 
-    <div class="falling-area" id="fallingRow"></div>
-
-    <div class="grid" id="grid"></div>
+    <div style="position:relative">
+      <div class="falling-area" id="fallingRow"></div>
+      <div class="grid" id="grid"></div>
+      <div class="touch-zone" id="touchZone"></div>
+    </div>
 
     <div class="controls">
       <button class="btn btn-rotate" onclick="rotate(-1)">&#9666;</button>
@@ -661,7 +764,8 @@
 <div class="game-overlay" id="gameOverlay">
   <div class="go-title">SYSTEM HALT</div>
   <div class="go-stats" id="finalStats"></div>
-  <button class="btn primary" onclick="resetGame()" style="font-size:14px;padding:12px 28px;letter-spacing:3px">REBOOT</button>
+  <div id="goLeaderboard"></div>
+  <button class="btn primary" onclick="resetGame()" style="font-size:14px;padding:12px 28px;letter-spacing:3px;margin-top:16px">REBOOT</button>
 </div>
 
 <div class="info">
@@ -1182,7 +1286,9 @@ async function drop() {
     stats.innerHTML = `<div class="go-score">${score.toLocaleString()}</div><br>` +
       `Drops: ${totalDrops} \u00b7 Cleared: ${totalCleared} \u00b7 Chains: ${totalChains}<br>` +
       `Bomb: ${bombUsed ? 'detonated' : 'unused'}`;
+    saveScore(score);
     SFX.gameOver();
+    renderLeaderboard(document.getElementById('goLeaderboard'), score);
     document.getElementById('gameOverlay').classList.add('show');
     busy = false;
     return;
@@ -1348,6 +1454,91 @@ function toggleSound() {
   document.getElementById('soundBtn').style.opacity = soundEnabled ? '1' : '0.4';
   if (soundEnabled) audioCtx.resume();
 }
+
+// ===== TOUCH =====
+(function() {
+  const zone = document.getElementById('touchZone');
+  let tx = 0, ty = 0, moved = false;
+  const THRESH = 30;
+
+  zone.addEventListener('touchstart', e => {
+    const t = e.touches[0];
+    tx = t.clientX; ty = t.clientY;
+    moved = false;
+    e.preventDefault();
+  }, {passive: false});
+
+  zone.addEventListener('touchmove', e => {
+    if (moved) return;
+    const t = e.touches[0];
+    const dx = t.clientX - tx;
+    const dy = t.clientY - ty;
+    if (Math.abs(dx) > THRESH && Math.abs(dx) > Math.abs(dy)) {
+      moved = true;
+      rotate(dx > 0 ? 1 : -1);
+    } else if (dy > THRESH && Math.abs(dy) > Math.abs(dx)) {
+      moved = true;
+      drop();
+    }
+    e.preventDefault();
+  }, {passive: false});
+
+  zone.addEventListener('touchend', e => {
+    if (!moved) {
+      if (!gameStarted) togglePause(); // tap to start
+      else drop(); // tap = drop
+    }
+    e.preventDefault();
+  }, {passive: false});
+})();
+
+// ===== LEADERBOARD =====
+const LB_KEY = 'kolumn_top5';
+
+function getLeaderboard() {
+  try {
+    return JSON.parse(localStorage.getItem(LB_KEY)) || [];
+  } catch(e) { return []; }
+}
+
+function saveScore(sc) {
+  const lb = getLeaderboard();
+  const entry = { score: sc, date: new Date().toLocaleDateString('en-GB') };
+  lb.push(entry);
+  lb.sort((a, b) => b.score - a.score);
+  const top5 = lb.slice(0, 5);
+  try { localStorage.setItem(LB_KEY, JSON.stringify(top5)); } catch(e) {}
+  return top5;
+}
+
+function renderLeaderboard(container, currentScore) {
+  const lb = getLeaderboard();
+  if (lb.length === 0) { container.innerHTML = ''; return; }
+  let marked = false;
+  let html = '<ul class="lb-list">';
+  lb.forEach((e, i) => {
+    const isNew = !marked && e.score === currentScore;
+    if (isNew) marked = true;
+    html += `<li class="${isNew ? 'lb-new' : ''}">`;
+    html += `<span class="lb-rank">#${i+1}</span>`;
+    html += `<span class="lb-score">${e.score.toLocaleString()}</span>`;
+    html += `<span class="lb-date">${e.date}</span>`;
+    html += `</li>`;
+  });
+  html += '</ul>';
+  container.innerHTML = html;
+}
+
+// ===== MOBILE CELL SIZE =====
+function setCellSize() {
+  if (window.innerWidth <= 600) {
+    const maxW = window.innerWidth - 24;
+    const sz = Math.floor((maxW - 2 * 4) / 5); // 5 cols, 4 gaps of 2px
+    document.documentElement.style.setProperty('--cell-size-mobile', sz + 'px');
+  }
+}
+window.addEventListener('resize', setCellSize);
+setCellSize();
 
 setTheme('ocean');
 resetGame();
