@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KOLUMN v0.9.1</title>
+<title>KOLUMN v1.0</title>
 <!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-TRP1QX4878"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-TRP1QX4878');</script>
@@ -646,6 +646,7 @@
       <button class="btn btn-rotate" onclick="rotate(1)">&#9656;</button>
       <button class="btn" id="pauseBtn" onclick="togglePause()">&#9208;</button>
       <button class="btn" onclick="resetGame()">&#8635;</button>
+      <button class="btn" id="soundBtn" onclick="toggleSound()" title="Sound">&#128266;</button>
     </div>
   </div>
 </div>
@@ -674,6 +675,92 @@
 </div>
 
 <script>
+// ===== AUDIO =====
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let soundEnabled = true;
+
+function playTone(freq, dur, type='sine', vol=0.15, detune=0) {
+  if (!soundEnabled) return;
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = type;
+  o.frequency.value = freq;
+  o.detune.value = detune;
+  g.gain.setValueAtTime(vol, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+  o.connect(g);
+  g.connect(audioCtx.destination);
+  o.start();
+  o.stop(audioCtx.currentTime + dur);
+}
+
+function playNoise(dur, vol=0.1) {
+  if (!soundEnabled) return;
+  const buf = audioCtx.createBuffer(1, audioCtx.sampleRate * dur, audioCtx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1);
+  const src = audioCtx.createBufferSource();
+  const g = audioCtx.createGain();
+  src.buffer = buf;
+  g.gain.setValueAtTime(vol, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+  src.connect(g);
+  g.connect(audioCtx.destination);
+  src.start();
+}
+
+const SFX = {
+  rotate() {
+    playTone(800, 0.06, 'sine', 0.08);
+  },
+  drop() {
+    playTone(200, 0.15, 'triangle', 0.12);
+    playTone(150, 0.1, 'sine', 0.06);
+  },
+  match(count) {
+    // Higher pitch for more matches
+    const base = 400 + count * 80;
+    playTone(base, 0.2, 'sine', 0.15);
+    setTimeout(() => playTone(base * 1.25, 0.15, 'sine', 0.12), 80);
+    if (count >= 3) setTimeout(() => playTone(base * 1.5, 0.15, 'sine', 0.1), 160);
+  },
+  stack() {
+    playTone(120, 0.12, 'square', 0.06);
+  },
+  chain() {
+    playTone(600, 0.12, 'sine', 0.15);
+    setTimeout(() => playTone(800, 0.12, 'sine', 0.15), 70);
+    setTimeout(() => playTone(1000, 0.15, 'sine', 0.12), 140);
+    setTimeout(() => playTone(1200, 0.2, 'sine', 0.1), 210);
+  },
+  bombLand() {
+    playTone(80, 0.5, 'sine', 0.2);
+    playTone(60, 0.6, 'triangle', 0.15);
+  },
+  bombRay() {
+    playTone(300, 0.1, 'sawtooth', 0.05);
+  },
+  bombExplode() {
+    playNoise(0.8, 0.25);
+    playTone(60, 0.6, 'sawtooth', 0.2);
+    playTone(40, 0.8, 'square', 0.15);
+    setTimeout(() => playNoise(0.4, 0.15), 200);
+  },
+  gameOver() {
+    playTone(300, 0.3, 'square', 0.12);
+    setTimeout(() => playTone(200, 0.3, 'square', 0.1), 250);
+    setTimeout(() => playTone(120, 0.5, 'square', 0.08), 500);
+  },
+  start() {
+    playTone(400, 0.1, 'sine', 0.1);
+    setTimeout(() => playTone(600, 0.1, 'sine', 0.1), 80);
+    setTimeout(() => playTone(800, 0.15, 'sine', 0.12), 160);
+  },
+  timerWarn() {
+    playTone(1000, 0.05, 'square', 0.04);
+  }
+};
+
 // ===== CONSTANTS =====
 const COLS = 5;
 const SYMBOLS = 5;
@@ -870,8 +957,10 @@ function startTimerFrom(elapsed) {
     else if (currentMult >= 4.0) multEl.className = 'mult-display mid';
     else multEl.className = 'mult-display low';
 
-    if (currentMult <= 1.5) bar.classList.add('urgent');
-    else bar.classList.remove('urgent');
+    if (currentMult <= 1.5) {
+      if (!bar.classList.contains('urgent')) SFX.timerWarn();
+      bar.classList.add('urgent');
+    } else bar.classList.remove('urgent');
 
     if (currentMult <= 1.0) { drop(); return; }
     timer = requestAnimationFrame(tick);
@@ -892,12 +981,14 @@ function togglePause() {
 
   // First press = start game
   if (!gameStarted) {
+    audioCtx.resume();
     gameStarted = true;
     paused = false;
     document.getElementById('pauseBtn').textContent = '\u23f8';
     document.getElementById('pauseBtn').style.color = '';
     document.getElementById('dropBtn').disabled = false;
     document.getElementById('pauseBtn').blur();
+    SFX.start();
     startTimer();
     return;
   }
@@ -923,6 +1014,7 @@ function togglePause() {
 // ===== ROTATE =====
 function rotate(dir) {
   if (gameOver || busy || paused) return;
+  SFX.rotate();
   if (dir > 0) {
     falling.unshift(falling.pop());
   } else {
@@ -957,6 +1049,9 @@ async function drop() {
     }
   }
 
+  if (matched > 0) SFX.match(matched);
+  else SFX.stack();
+
   renderGrid(matchResults);
   await delay(400);
 
@@ -988,6 +1083,7 @@ async function drop() {
   }
 
   if (chainCols.size > 0) {
+    SFX.chain();
     renderGrid(null, chainCols);
     await delay(500);
     for (const c of chainCols) {
@@ -1032,6 +1128,7 @@ async function drop() {
         }
 
         // Step 1: bomb lands
+        SFX.bombLand();
         renderGridBomb(new Set([`${bombCol},${bombRow}`]), `${bombCol},${bombRow}`);
         await delay(1000);
 
@@ -1043,6 +1140,7 @@ async function drop() {
           if (lc >= 0 && lr >= 0 && lr < columns[lc].length) revealed.add(`${lc},${lr}`);
           let rc = bombCol + step, rr = bombRow - step;
           if (rc < COLS && rr >= 0 && rr < columns[rc].length) revealed.add(`${rc},${rr}`);
+          SFX.bombRay();
           renderGridBomb(revealed, `${bombCol},${bombRow}`);
           await delay(250);
         }
@@ -1052,6 +1150,7 @@ async function drop() {
         flash.className = 'bomb-flash';
         flash.innerHTML = '<div class="bomb-flash-text">DETONATE</div>';
         document.body.appendChild(flash);
+        SFX.bombExplode();
         renderGridBomb(destroy, `${bombCol},${bombRow}`);
         await delay(800);
         flash.remove();
@@ -1083,6 +1182,7 @@ async function drop() {
     stats.innerHTML = `<div class="go-score">${score.toLocaleString()}</div><br>` +
       `Drops: ${totalDrops} \u00b7 Cleared: ${totalCleared} \u00b7 Chains: ${totalChains}<br>` +
       `Bomb: ${bombUsed ? 'detonated' : 'unused'}`;
+    SFX.gameOver();
     document.getElementById('gameOverlay').classList.add('show');
     busy = false;
     return;
@@ -1240,6 +1340,14 @@ document.addEventListener('keydown', e => {
   else if (e.key === ' ' || e.key === 'ArrowDown') { e.preventDefault(); drop(); }
   else if (e.key === 'p' || e.key === 'P') { e.preventDefault(); togglePause(); }
 });
+
+// ===== SOUND TOGGLE =====
+function toggleSound() {
+  soundEnabled = !soundEnabled;
+  document.getElementById('soundBtn').textContent = soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07';
+  document.getElementById('soundBtn').style.opacity = soundEnabled ? '1' : '0.4';
+  if (soundEnabled) audioCtx.resume();
+}
 
 setTheme('ocean');
 resetGame();
