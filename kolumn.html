@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KOLUMN v1.1.1</title>
+<title>KOLUMN v1.2</title>
 <meta property="og:title" content="KOLUMN">
 <meta property="og:description" content="Skill-based arcade puzzle. Drop, rotate, match. Beat the clock.">
 <meta property="og:type" content="website">
@@ -580,6 +580,59 @@
     animation: pauseBlink 2s ease-in-out infinite;
   }
 
+  /* Start button blink */
+  .btn.blink-start {
+    animation: startBlink 1s ease-in-out infinite;
+  }
+
+  @keyframes startBlink {
+    0%, 100% { opacity: 1; border-color: var(--glow); box-shadow: 0 0 8px var(--glow); }
+    50% { opacity: 0.4; border-color: var(--border); box-shadow: none; }
+  }
+
+  /* Info overlay */
+  .info-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(5,5,12,0.94);
+    z-index: 550;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+
+  .info-overlay.show { display: flex; }
+
+  .info-content {
+    max-width: 340px;
+    padding: 24px;
+    text-align: center;
+  }
+
+  .info-content h2 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: var(--glow);
+    margin-bottom: 16px;
+  }
+
+  .info-content p {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.8;
+    margin-bottom: 10px;
+  }
+
+  .info-content .info-key {
+    color: var(--glow);
+    font-weight: bold;
+  }
+
   @keyframes pauseBlink {
     0%, 100% { opacity: 0.4; }
     50% { opacity: 0.8; }
@@ -754,7 +807,8 @@
       <button class="btn btn-rotate" onclick="rotate(1)">&#9656;</button>
       <button class="btn" id="pauseBtn" onclick="togglePause()">&#9208;</button>
       <button class="btn" onclick="resetGame()">&#8635;</button>
-      <button class="btn" id="soundBtn" onclick="toggleSound()" title="Sound">&#128266;</button>
+      <button class="btn" id="soundBtn" onclick="toggleSound()" title="Sound" style="opacity:0.4">&#128263;</button>
+      <button class="btn" id="infoBtn" onclick="toggleInfo()" title="Info">?</button>
     </div>
   </div>
 </div>
@@ -763,6 +817,22 @@
 <div class="pause-blackout" id="pauseBlackout">
   <div class="pause-blackout-text">PAUSED</div>
   <div style="margin-top:16px;font-size:11px;color:var(--text-dim)">Press P to resume</div>
+</div>
+
+<!-- Info Overlay -->
+<div class="info-overlay" id="infoOverlay">
+  <div class="info-content">
+    <h2>HOW TO PLAY</h2>
+    <p>A strip of <span class="info-key">5 symbols</span> falls onto columns.</p>
+    <p>If a symbol <span class="info-key">matches</span> the top of its column &mdash; both are cleared. Otherwise it stacks.</p>
+    <p><span class="info-key">Rotate</span> the strip to align matches.<br>Clear <span class="info-key">3+ in a row</span> horizontally for chain bonus.</p>
+    <p>Drop fast for higher <span class="info-key">multiplier</span> (&times;10 &rarr; &times;1).<br>Column hits 10 = <span class="info-key">GAME OVER</span>.</p>
+    <p style="margin-top:12px;color:var(--text-dim);font-size:11px">
+      Desktop: &larr;&rarr; rotate &middot; SPACE drop &middot; P pause<br>
+      Mobile: swipe L/R rotate &middot; swipe down/tap drop
+    </p>
+    <button class="btn primary" onclick="toggleInfo()" style="margin-top:16px;padding:10px 24px">GOT IT</button>
+  </div>
 </div>
 
 <!-- Game Over Overlay -->
@@ -786,7 +856,7 @@
 <script>
 // ===== AUDIO =====
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-let soundEnabled = true;
+let soundEnabled = false;
 
 function playTone(freq, dur, type='sine', vol=0.15, detune=0) {
   if (!soundEnabled) return;
@@ -1096,6 +1166,7 @@ function togglePause() {
     document.getElementById('pauseBtn').textContent = '\u23f8';
     document.getElementById('pauseBtn').style.color = '';
     document.getElementById('dropBtn').disabled = false;
+    document.getElementById('pauseBtn').classList.remove('blink-start');
     document.getElementById('pauseBtn').blur();
     SFX.start();
     startTimer();
@@ -1428,6 +1499,7 @@ function resetGame() {
   document.getElementById('bombVal').className = 'panel-value bomb-ready';
   document.getElementById('pauseBtn').textContent = '\u25b6';
   document.getElementById('pauseBtn').style.color = 'var(--glow)';
+  document.getElementById('pauseBtn').classList.add('blink-start');
   document.getElementById('dropBtn').disabled = true;
   falling = generate();
   nextPiece = generate();
@@ -1458,6 +1530,13 @@ function toggleSound() {
   document.getElementById('soundBtn').textContent = soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07';
   document.getElementById('soundBtn').style.opacity = soundEnabled ? '1' : '0.4';
   if (soundEnabled) audioCtx.resume();
+}
+
+// ===== INFO =====
+let infoOpen = false;
+function toggleInfo() {
+  infoOpen = !infoOpen;
+  document.getElementById('infoOverlay').classList.toggle('show', infoOpen);
 }
 
 // ===== TOUCH =====
