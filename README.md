@@ -2,7 +2,7 @@
 
 Skill-based arcade puzzle game. Drop, rotate, match.
 
-**[Play KOLUMN](https://constarik.github.io/kolumn/)**
+**[Play KOLUMN](https://constarik.github.io/KOLUMN/)**
 
 ## Mechanics
 - 5×5 grid, 5 symbol types
