@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KOLUMN v1.2.1</title>
+<title>KOLUMN v1.2.3</title>
 <meta property="og:title" content="KOLUMN">
 <meta property="og:description" content="Skill-based arcade puzzle. Drop, rotate, match. Beat the clock.">
 <meta property="og:type" content="website">
@@ -830,7 +830,8 @@
     <h2 style="font-size:14px;margin-top:16px">SCORING</h2>
     <p><span class="info-key">Match:</span> N&sup2; &times; 10 &times; mult<br>
     <span class="info-key">Chain (3+):</span> N&sup2; &times; 5 &times; mult<br>
-    <span class="info-key">Bomb:</span> N&sup2; &times; 3</p>
+    <span class="info-key">Bomb:</span> N&sup2; &times; 30<br>
+    <span style="color:var(--text-dim);font-size:11px">N = number of cells cleared</span></p>
     <h2 style="font-size:14px;margin-top:16px">BOMB</h2>
     <p>One-time rescue. Triggers automatically when columns get dangerously high (6+). Lands on a random column top and fires <span class="info-key">diagonal rays</span> downward, destroying cells in their path.</p>
     <p style="margin-top:12px;color:var(--text-dim);font-size:11px">
@@ -1350,7 +1351,7 @@ async function drop() {
           columns[col] = newCol;
         }
 
-        score += Math.round(destroy.size * destroy.size * 3);
+        score += Math.round(destroy.size * destroy.size * 30);
         totalCleared += destroy.size;
         renderAll();
         await delay(300);
