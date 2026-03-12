@@ -1,4 +1,4 @@
-# KOLUMN v1.2.6
+# KOLUMN v1.2.8
 
 Skill-based arcade puzzle game. Drop, rotate, match.
 
