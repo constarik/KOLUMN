@@ -1,8 +1,8 @@
-# KOLUMN
+# KOLUMN v1.2.5
 
 Skill-based arcade puzzle game. Drop, rotate, match.
 
-**[Play KOLUMN](https://constarik.github.io/KOLUMN/)**
+**[Play KOLUMN](https://constarik.github.io/KOLUMN/kolumn.html)**
 
 ## Mechanics
 - 5×5 grid, 5 symbol types
@@ -17,6 +17,5 @@ Skill-based arcade puzzle game. Drop, rotate, match.
 - P : Pause
 
 ## Files
-- `kolumn.html` — playable prototype
-- `docs/index.html` — GitHub Pages deploy
+- `kolumn.html` — game (GitHub Pages: [/kolumn.html](https://constarik.github.io/KOLUMN/kolumn.html))
 - `KOLUMN-SPEC.md` — full game design document
