@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0f1e32">
 <link rel="manifest" href="manifest.json">
-<title>KOLUMN v1.4.7</title>
+<title>KOLUMN v1.4.8</title>
 <meta property="og:title" content="KOLUMN">
 <meta property="og:description" content="Skill-based arcade puzzle. Drop, rotate, match. Beat the clock.">
 <meta property="og:type" content="website">
@@ -906,7 +906,7 @@ if (window.innerWidth <= 600) {
 <body>
 
 <div class="grid-bg"></div>
-<div style="position:fixed;bottom:6px;right:8px;font-size:10px;opacity:0.3;font-family:'Share Tech Mono',monospace;z-index:999;pointer-events:none">v1.4.7</div>
+<div style="position:fixed;bottom:6px;right:8px;font-size:10px;opacity:0.3;font-family:'Share Tech Mono',monospace;z-index:999;pointer-events:none">v1.4.8</div>
 
 <div class="game-container">
   <!-- Left Panel -->
@@ -1584,14 +1584,17 @@ function renderFalling() {
 }
 
 function renderNext() {
-  const row = document.getElementById('nextRow');
-  row.innerHTML = '';
-  for (let c = 0; c < COLS; c++) {
-    const cell = document.createElement('div');
-    cell.className = 'next-cell';
-    cell.appendChild(createSymbolCanvas(nextPiece[c], 32));
-    row.appendChild(cell);
-  }
+  ['nextRow', 'nextRowMobile'].forEach(id => {
+    const row = document.getElementById(id);
+    if (!row) return;
+    row.innerHTML = '';
+    for (let c = 0; c < COLS; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'next-cell';
+      cell.appendChild(createSymbolCanvas(nextPiece[c], 32));
+      row.appendChild(cell);
+    }
+  });
 }
 
 function renderGrid(matchResults, chainCols) {
