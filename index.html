@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0f1e32">
 <link rel="manifest" href="manifest.json">
-<title>KOLUMN v1.4.6</title>
+<title>KOLUMN v1.4.7</title>
 <meta property="og:title" content="KOLUMN">
 <meta property="og:description" content="Skill-based arcade puzzle. Drop, rotate, match. Beat the clock.">
 <meta property="og:type" content="website">
@@ -809,6 +809,7 @@ if (window.innerWidth <= 600) {
 
     /* Timer stretches to fill space above stats */
     .timer-wrap {
+      display: flex !important;
       width: 6px !important;
       flex: 1 !important;
       height: auto !important;
@@ -819,6 +820,7 @@ if (window.innerWidth <= 600) {
 
     /* Multiplier: bigger font */
     .mult-display {
+      display: block !important;
       width: var(--cell-size-mobile) !important;
       font-size: 18px !important;
       font-weight: bold;
@@ -904,7 +906,7 @@ if (window.innerWidth <= 600) {
 <body>
 
 <div class="grid-bg"></div>
-<div style="position:fixed;bottom:6px;right:8px;font-size:10px;opacity:0.3;font-family:'Share Tech Mono',monospace;z-index:999;pointer-events:none">v1.4.6</div>
+<div style="position:fixed;bottom:6px;right:8px;font-size:10px;opacity:0.3;font-family:'Share Tech Mono',monospace;z-index:999;pointer-events:none">v1.4.7</div>
 
 <div class="game-container">
   <!-- Left Panel -->
@@ -959,7 +961,7 @@ if (window.innerWidth <= 600) {
         <button class="btn primary" id="dropBtn" onclick="drop()">DROP</button>
         <button class="btn btn-rotate" onclick="rotate(1)">&#9656;</button>
         <button class="btn" id="pauseBtn" onclick="togglePause()">&#9208;</button>
-        <button class="btn" onclick="resetGame()">&#8635;</button>
+        <button class="btn btn-reset" onclick="resetGame()">&#8635;</button>
         <button class="btn" id="soundBtn" onclick="toggleSound()" title="Sound" style="opacity:0.4">&#128263;</button>
         <button class="btn" id="infoBtn" onclick="toggleInfo()" title="Info" style="margin-left:8px">?</button>
       </div>
