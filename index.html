@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0f1e32">
 <link rel="manifest" href="manifest.json">
-<title>KOLUMN v1.4.9</title>
+<title>KOLUMN v1.5.0</title>
 <meta property="og:title" content="KOLUMN">
 <meta property="og:description" content="Skill-based arcade puzzle. Drop, rotate, match. Beat the clock.">
 <meta property="og:type" content="website">
@@ -778,6 +778,14 @@ if (window.innerWidth <= 600) {
       display: flex;
       gap: 2px;
     }
+    .next-top-bar .next-cell {
+      width: calc(var(--cell-size-mobile) * 0.7);
+      height: calc(var(--cell-size-mobile) * 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
     .next-top-bar .next-cell canvas {
       width: calc(var(--cell-size-mobile) * 0.7) !important;
       height: calc(var(--cell-size-mobile) * 0.7) !important;
@@ -906,7 +914,7 @@ if (window.innerWidth <= 600) {
 <body>
 
 <div class="grid-bg"></div>
-<div style="position:fixed;bottom:6px;right:8px;font-size:10px;opacity:0.3;font-family:'Share Tech Mono',monospace;z-index:999;pointer-events:none">v1.4.9</div>
+<div style="position:fixed;bottom:6px;right:8px;font-size:10px;opacity:0.3;font-family:'Share Tech Mono',monospace;z-index:999;pointer-events:none">v1.5.0</div>
 
 <div class="game-container">
   <!-- Left Panel -->
@@ -1584,18 +1592,18 @@ function renderFalling() {
 }
 
 function renderNext() {
-  const cellSize = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--cell-size-mobile')) || 20;
-  const mobileSize = Math.round(cellSize * 0.7);
-
-  ['nextRow', 'nextRowMobile'].forEach(id => {
+  const rows = [
+    { id: 'nextRow',       size: 32 },
+    { id: 'nextRowMobile', size: 20 }
+  ];
+  rows.forEach(({ id, size }) => {
     const row = document.getElementById(id);
     if (!row) return;
-    const isMobile = id === 'nextRowMobile';
     row.innerHTML = '';
     for (let c = 0; c < COLS; c++) {
       const cell = document.createElement('div');
       cell.className = 'next-cell';
-      cell.appendChild(createSymbolCanvas(nextPiece[c], isMobile ? mobileSize : 32));
+      cell.appendChild(createSymbolCanvas(nextPiece[c], size));
       row.appendChild(cell);
     }
   });
