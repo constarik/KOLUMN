@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KOLUMN v1.3.0</title>
+<title>KOLUMN v1.3.1</title>
 <meta property="og:title" content="KOLUMN">
 <meta property="og:description" content="Skill-based arcade puzzle. Drop, rotate, match. Beat the clock.">
 <meta property="og:type" content="website">
@@ -12,6 +12,22 @@
 <!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-TRP1QX4878"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-TRP1QX4878');</script>
+<script>
+// Real viewport height fix for mobile browsers
+function setMobileViewport() {
+  if (window.innerWidth <= 600) {
+    const vh = window.innerHeight;
+    const vw = window.innerWidth;
+    const cellByW = (vw - 32) / 5;
+    const cellByH = (vh - 200) / 11;
+    const cell = Math.min(cellByW, cellByH);
+    document.documentElement.style.setProperty('--cell-size-mobile', cell + 'px');
+    document.documentElement.style.setProperty('--cell-size', cell + 'px');
+  }
+}
+setMobileViewport();
+window.addEventListener('resize', setMobileViewport);
+</script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&display=swap');
 
@@ -761,7 +777,7 @@
 <body>
 
 <div class="grid-bg"></div>
-<div style="position:fixed;bottom:6px;right:8px;font-size:10px;opacity:0.3;font-family:'Share Tech Mono',monospace;z-index:999;pointer-events:none">v1.3.0</div>
+<div style="position:fixed;bottom:6px;right:8px;font-size:10px;opacity:0.3;font-family:'Share Tech Mono',monospace;z-index:999;pointer-events:none">v1.3.1</div>
 
 <div class="game-container">
   <!-- Left Panel -->
@@ -861,7 +877,7 @@
 
 <div class="info">
   <kbd>&larr;</kbd> <kbd>&rarr;</kbd> rotate &nbsp; <kbd>SPACE</kbd> drop &nbsp; <kbd>P</kbd> pause
-  <div style="margin-top:4px;font-size:10px;opacity:0.5">v1.3.0</div>
+  <div style="margin-top:4px;font-size:10px;opacity:0.5">v1.3.1</div>
   <div class="theme-switcher">
     <span class="theme-btn" data-theme="ocean" title="Deep Ocean" style="background:linear-gradient(135deg,#0a1628,#00d4e8)" onclick="setTheme('ocean')"></span>
     <span class="theme-btn" data-theme="purple" title="Midnight Purple" style="background:linear-gradient(135deg,#12091f,#bf7aff)" onclick="setTheme('purple')"></span>
