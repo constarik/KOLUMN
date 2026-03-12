@@ -29,7 +29,7 @@
     --text: #c0d8e8;
     --text-dim: #5a8098;
     --cell-size: 48px;
-    --cell-size-mobile: 56px;
+    --cell-size-mobile: calc((100vw - 32px) / 5);
     --gap: 3px;
     --grid-line: rgba(0,212,232,0.03);
     --scanline: rgba(0,30,60,0.06);
@@ -96,7 +96,7 @@
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    overflow: hidden;
+    overflow-x: hidden;
   }
 
   /* Scanline overlay */
@@ -701,6 +701,7 @@
     body {
       align-items: flex-start;
       padding-top: 8px;
+      overflow-y: auto;
     }
 
     .game-container {
@@ -728,6 +729,9 @@
 
     .controls {
       gap: 4px;
+      flex-wrap: wrap;
+      width: calc(var(--cell-size) * 5 + var(--gap) * 4);
+    }
     }
 
     .btn { padding: 10px 12px; font-size: 13px; }
