@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0f1e32">
 <link rel="manifest" href="manifest.json">
-<title>KOLUMN v1.3.4</title>
+<title>KOLUMN v1.3.5</title>
 <meta property="og:title" content="KOLUMN">
 <meta property="og:description" content="Skill-based arcade puzzle. Drop, rotate, match. Beat the clock.">
 <meta property="og:type" content="website">
@@ -23,8 +23,8 @@ function setMobileViewport() {
   if (window.innerWidth <= 600) {
     const vh = window.innerHeight;
     const vw = window.innerWidth;
-    const cellByW = (vw - 32) / 6;   // 5 grid cols + 1 strip col
-    const cellByH = (vh - 200) / 10; // 10 grid rows only, no strip row
+    const cellByW = (vw - 40) / 6;   // 5 grid + 1 pocket
+    const cellByH = (vh - 130) / 10; // 10 grid rows, no strip row
     const cell = Math.min(cellByW, cellByH);
     document.documentElement.style.setProperty('--cell-size-mobile', cell + 'px');
     document.documentElement.style.setProperty('--cell-size', cell + 'px');
@@ -769,17 +769,48 @@ if (window.innerWidth <= 600) {
     .controls {
       gap: 4px;
       flex-wrap: wrap;
-      width: calc(var(--cell-size) * 5 + var(--gap) * 4);
+      width: 100%;
     }
 
-    /* Strip goes vertical to the RIGHT of the grid */
-    .game-board > div[style] {
+    /* game-board: left=grid+controls, right=side pocket */
+    .game-board {
       display: flex;
       flex-direction: row;
       align-items: flex-start;
-      gap: var(--gap);
+      gap: 4px;
     }
 
+    /* Left: grid + controls stacked */
+    .game-board-left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    /* Right pocket: timer(vertical) + mult + strip */
+    .game-board-right {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      width: var(--cell-size);
+    }
+
+    /* Vertical timer bar */
+    .timer-wrap {
+      width: 6px !important;
+      height: calc(var(--cell-size) * 3) !important;
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+    }
+
+    .mult-display {
+      width: var(--cell-size) !important;
+      font-size: 9px !important;
+      text-align: center;
+    }
+
+    /* Falling strip vertical */
     .falling-area {
       flex-direction: column !important;
       width: var(--cell-size) !important;
@@ -787,15 +818,6 @@ if (window.innerWidth <= 600) {
       border-bottom: none !important;
       border-left: 1px solid var(--border);
       padding: 0 !important;
-      order: 2;
-    }
-
-    .grid { order: 1; }
-
-    .timer-wrap,
-    .mult-display,
-    .controls {
-      width: calc(var(--cell-size) * 5 + var(--gap) * 4) !important;
     }
     }
 
@@ -822,7 +844,7 @@ if (window.innerWidth <= 600) {
 <body>
 
 <div class="grid-bg"></div>
-<div style="position:fixed;bottom:6px;right:8px;font-size:10px;opacity:0.3;font-family:'Share Tech Mono',monospace;z-index:999;pointer-events:none">v1.3.4</div>
+<div style="position:fixed;bottom:6px;right:8px;font-size:10px;opacity:0.3;font-family:'Share Tech Mono',monospace;z-index:999;pointer-events:none">v1.3.5</div>
 
 <div class="game-container">
   <!-- Left Panel -->
@@ -860,25 +882,27 @@ if (window.innerWidth <= 600) {
 
   <!-- Main Board -->
   <div class="game-board">
-    <div class="timer-wrap">
-      <div class="timer-bar" id="timerBar"></div>
+    <div class="game-board-left">
+      <div style="position:relative">
+        <div class="grid" id="grid"></div>
+        <div class="touch-zone" id="touchZone"></div>
+      </div>
+      <div class="controls">
+        <button class="btn btn-rotate" onclick="rotate(-1)">&#9666;</button>
+        <button class="btn primary" id="dropBtn" onclick="drop()">DROP</button>
+        <button class="btn btn-rotate" onclick="rotate(1)">&#9656;</button>
+        <button class="btn" id="pauseBtn" onclick="togglePause()">&#9208;</button>
+        <button class="btn" onclick="resetGame()">&#8635;</button>
+        <button class="btn" id="soundBtn" onclick="toggleSound()" title="Sound" style="opacity:0.4">&#128263;</button>
+        <button class="btn" id="infoBtn" onclick="toggleInfo()" title="Info">?</button>
+      </div>
     </div>
-    <div class="mult-display high" id="multDisplay">&times;10.0</div>
-
-    <div style="position:relative">
+    <div class="game-board-right">
+      <div class="timer-wrap">
+        <div class="timer-bar" id="timerBar"></div>
+      </div>
+      <div class="mult-display high" id="multDisplay">&times;10.0</div>
       <div class="falling-area" id="fallingRow"></div>
-      <div class="grid" id="grid"></div>
-      <div class="touch-zone" id="touchZone"></div>
-    </div>
-
-    <div class="controls">
-      <button class="btn btn-rotate" onclick="rotate(-1)">&#9666;</button>
-      <button class="btn primary" id="dropBtn" onclick="drop()">DROP</button>
-      <button class="btn btn-rotate" onclick="rotate(1)">&#9656;</button>
-      <button class="btn" id="pauseBtn" onclick="togglePause()">&#9208;</button>
-      <button class="btn" onclick="resetGame()">&#8635;</button>
-      <button class="btn" id="soundBtn" onclick="toggleSound()" title="Sound" style="opacity:0.4">&#128263;</button>
-      <button class="btn" id="infoBtn" onclick="toggleInfo()" title="Info">?</button>
     </div>
   </div>
 </div>
@@ -922,7 +946,7 @@ if (window.innerWidth <= 600) {
 
 <div class="info">
   <kbd>&larr;</kbd> <kbd>&rarr;</kbd> rotate &nbsp; <kbd>SPACE</kbd> drop &nbsp; <kbd>P</kbd> pause
-  <div style="margin-top:4px;font-size:10px;opacity:0.5">v1.3.4</div>
+  <div style="margin-top:4px;font-size:10px;opacity:0.5">v1.3.5</div>
   <div class="theme-switcher">
     <span class="theme-btn" data-theme="ocean" title="Deep Ocean" style="background:linear-gradient(135deg,#0a1628,#00d4e8)" onclick="setTheme('ocean')"></span>
     <span class="theme-btn" data-theme="purple" title="Midnight Purple" style="background:linear-gradient(135deg,#12091f,#bf7aff)" onclick="setTheme('purple')"></span>
