@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0f1e32">
 <link rel="manifest" href="manifest.json">
-<title>KOLUMN v1.4.7</title>
+<title>KOLUMN v1.4.8</title>
 <meta property="og:title" content="KOLUMN">
 <meta property="og:description" content="Skill-based arcade puzzle. Drop, rotate, match. Beat the clock.">
 <meta property="og:type" content="website">
@@ -778,6 +778,14 @@ if (window.innerWidth <= 600) {
       display: flex;
       gap: 2px;
     }
+    .next-top-bar .next-cell {
+      width: calc(var(--cell-size-mobile) * 0.7);
+      height: calc(var(--cell-size-mobile) * 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
     .next-top-bar .next-cell canvas {
       width: calc(var(--cell-size-mobile) * 0.7) !important;
       height: calc(var(--cell-size-mobile) * 0.7) !important;
@@ -906,7 +914,7 @@ if (window.innerWidth <= 600) {
 <body>
 
 <div class="grid-bg"></div>
-<div style="position:fixed;bottom:6px;right:8px;font-size:10px;opacity:0.3;font-family:'Share Tech Mono',monospace;z-index:999;pointer-events:none">v1.4.7</div>
+<div style="position:fixed;bottom:6px;right:8px;font-size:10px;opacity:0.3;font-family:'Share Tech Mono',monospace;z-index:999;pointer-events:none">v1.4.8</div>
 
 <div class="game-container">
   <!-- Left Panel -->
@@ -1028,7 +1036,7 @@ if (window.innerWidth <= 600) {
 
 <div class="info">
   <kbd>&larr;</kbd> <kbd>&rarr;</kbd> rotate &nbsp; <kbd>SPACE</kbd> drop &nbsp; <kbd>P</kbd> pause
-  <div style="margin-top:4px;font-size:10px;opacity:0.5">v1.4.7</div>
+  <div style="margin-top:4px;font-size:10px;opacity:0.5">v1.4.8</div>
   <div class="theme-switcher">
     <span class="theme-btn" data-theme="ocean" title="Deep Ocean" style="background:linear-gradient(135deg,#0a1628,#00d4e8)" onclick="setTheme('ocean')"></span>
     <span class="theme-btn" data-theme="purple" title="Midnight Purple" style="background:linear-gradient(135deg,#12091f,#bf7aff)" onclick="setTheme('purple')"></span>
@@ -1584,14 +1592,25 @@ function renderFalling() {
 }
 
 function renderNext() {
-  ['nextRow', 'nextRowMobile'].forEach(id => {
+  const isMobile = window.innerWidth <= 600;
+  let mobileSize = 20;
+  if (isMobile) {
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const cell = Math.min((vw - 40) / 6, (vh - 130) / 10);
+    mobileSize = Math.round(cell * 0.7);
+  }
+  const rows = [
+    { id: 'nextRow',       size: 32 },
+    { id: 'nextRowMobile', size: mobileSize }
+  ];
+  rows.forEach(({ id, size }) => {
     const row = document.getElementById(id);
     if (!row) return;
     row.innerHTML = '';
     for (let c = 0; c < COLS; c++) {
       const cell = document.createElement('div');
       cell.className = 'next-cell';
-      cell.appendChild(createSymbolCanvas(nextPiece[c], 32));
+      cell.appendChild(createSymbolCanvas(nextPiece[c], size));
       row.appendChild(cell);
     }
   });
