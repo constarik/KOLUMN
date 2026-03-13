@@ -1840,8 +1840,12 @@ document.addEventListener('keydown', e => {
 // ===== SOUND TOGGLE =====
 function toggleSound() {
   soundEnabled = !soundEnabled;
-  document.getElementById('soundBtn').textContent = soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07';
-  document.getElementById('soundBtn').style.opacity = soundEnabled ? '1' : '0.5';
+  const icon = soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07';
+  const op = soundEnabled ? '1' : '0.5';
+  document.getElementById('soundBtn').textContent = icon;
+  document.getElementById('soundBtn').style.opacity = op;
+  document.getElementById('pocketSoundBtn').textContent = icon;
+  document.getElementById('pocketSoundBtn').style.opacity = op;
   if (soundEnabled) audioCtx.resume();
 }
 
