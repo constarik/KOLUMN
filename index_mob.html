@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#0f1e32">
 <link rel="manifest" href="manifest.json">
 <title>KOLUMN</title>
-<script>const VERSION = 'v1.6.2';</script>
+<script>const VERSION = 'v1.6.3';</script>
 <meta property="og:title" content="KOLUMN">
 <meta property="og:description" content="Skill-based arcade puzzle. Drop, rotate, match. Beat the clock.">
 <meta property="og:type" content="website">
@@ -837,7 +837,8 @@ if (window.innerWidth <= 600) {
     }
 
     /* Falling strip: hidden on mobile */
-    .falling-area { display: none; }
+    /* Falling strip: visible on mobile */
+    .falling-area { display: flex; }
 
     /* Spacer pushes stats + aux to bottom */
     .pocket-spacer {
