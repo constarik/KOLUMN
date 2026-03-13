@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#0f1e32">
 <link rel="manifest" href="manifest.json">
 <title>KOLUMN</title>
-<script>const VERSION = 'v1.7.3';</script>
+<script>const VERSION = 'v1.7.4';</script>
 <meta property="og:title" content="KOLUMN">
 <meta property="og:description" content="Skill-based arcade puzzle. Drop, rotate, match. Beat the clock.">
 <meta property="og:type" content="website">
@@ -1009,7 +1009,7 @@ if (window.innerWidth <= 600) {
 </div>
 
 <!-- Pause Blackout -->
-<div class="pause-blackout" id="pauseBlackout" onclick="if(gameStarted) togglePause();">
+<div class="pause-blackout" id="pauseBlackout" onclick="startFullscreen();">
   <div class="pause-blackout-text" id="pauseText">PAUSED</div>
   <div style="margin-top:16px;font-size:11px;color:var(--text)" id="pauseHint">tap to resume</div>
 </div>
