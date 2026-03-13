@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#0f1e32">
 <link rel="manifest" href="manifest.json">
 <title>KOLUMN</title>
-<script>const VERSION = 'v1.6.9';</script>
+<script>const VERSION = 'v1.7.0';</script>
 <meta property="og:title" content="KOLUMN">
 <meta property="og:description" content="Skill-based arcade puzzle. Drop, rotate, match. Beat the clock.">
 <meta property="og:type" content="website">
@@ -999,9 +999,9 @@ if (window.innerWidth <= 600) {
       </div>
       <div class="mult-display high" id="multDisplay">&times;10.0</div>
       <div class="pocket-aux">
-        <button class="btn" onclick="togglePause()">&#9208;</button>
+        <button class="btn start-btn blink-start" id="pauseBtn" onclick="togglePause()">START</button>
         <button class="btn btn-reset" onclick="resetGame()">&#8635;</button>
-        <button class="btn" onclick="toggleSound()">&#128263;</button>
+        <button class="btn" id="soundBtn" onclick="toggleSound()">&#128263;</button>
         <button class="btn" onclick="toggleInfo()">?</button>
       </div>
     </div>
@@ -1011,7 +1011,6 @@ if (window.innerWidth <= 600) {
 <!-- Pause Blackout -->
 <div class="pause-blackout" id="pauseBlackout" onclick="if(document.getElementById('startBtn').style.display==='none') togglePause();">
   <div class="pause-blackout-text" id="pauseText">PAUSED</div>
-  <button class="btn primary blink-start" id="startBtn" onclick="startFullscreen()" style="margin-top:24px;font-size:16px;letter-spacing:4px;padding:14px 40px;display:none">START</button>
   <div style="margin-top:16px;font-size:11px;color:var(--text)" id="pauseHint">tap to resume</div>
 </div>
 
@@ -1369,10 +1368,8 @@ function togglePause() {
     paused = false;
     document.getElementById('pauseBtn').textContent = '\u23f8';
     document.getElementById('pauseBtn').style.color = '';
+    document.getElementById('pauseBtn').classList.remove('blink-start', 'start-btn');
     document.getElementById('dropBtn').disabled = false;
-    document.getElementById('pauseBtn').classList.remove('blink-start');
-    document.getElementById('pauseBtn').blur();
-    document.getElementById('startBtn').style.display = 'none';
     document.getElementById('pauseBlackout').classList.remove('show');
     SFX.start();
     startTimer();
@@ -1388,7 +1385,6 @@ function togglePause() {
     document.getElementById('dropBtn').disabled = true;
     if (!debugMode) {
       document.getElementById('pauseText').textContent = 'PAUSED';
-      document.getElementById('startBtn').style.display = 'none';
       document.getElementById('pauseHint').style.display = 'block';
       document.getElementById('pauseBlackout').classList.add('show');
     }
@@ -1715,8 +1711,9 @@ function resetGame() {
   document.getElementById('gameOverlay').classList.remove('show');
   document.getElementById('pauseBlackout').classList.add('show');
   document.getElementById('pauseText').textContent = 'KOLUMN';
-  document.getElementById('startBtn').style.display = 'inline-block';
   document.getElementById('pauseHint').style.display = 'none';
+  document.getElementById('pauseBtn').textContent = 'START';
+  document.getElementById('pauseBtn').classList.add('blink-start', 'start-btn');
   columns = [];
   for (let c = 0; c < COLS; c++) columns.push([]);
   score = 0; totalDrops = 0; totalCleared = 0; totalChains = 0;
