@@ -771,8 +771,7 @@ if (window.innerWidth <= 600) {
       align-items: center;
       justify-content: space-between;
       gap: 3px;
-      padding: 0 4px;
-      width: 100%;
+      padding: 0 2px;
     }
     .ntb-left {
       display: flex;
@@ -1016,17 +1015,17 @@ if (window.innerWidth <= 600) {
   </div>
 
   <!-- Mobile NEXT bar (hidden on desktop) -->
-  <div class="next-top-bar">
-    <div class="ntb-left">
-      <span class="ntb-label">next</span>
-      <div class="next-row" id="nextRowMobile"></div>
-    </div>
-    <div class="ntb-score" id="ntbScore">0</div>
-  </div>
 
   <!-- Main Board -->
   <div class="game-board">
     <div class="game-board-left">
+      <div class="next-top-bar">
+        <div class="ntb-left">
+          <span class="ntb-label">next</span>
+          <div class="next-row" id="nextRowMobile"></div>
+        </div>
+        <div class="ntb-score" id="ntbScore">0</div>
+      </div>
       <div class="falling-area" id="fallingRow"></div>
       <div style="position:relative">
         <div class="grid" id="grid"></div>
