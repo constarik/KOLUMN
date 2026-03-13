@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0f1e32">
 <link rel="manifest" href="manifest.json">
-<title>KOLUMN v1.5.2</title>
+<title>KOLUMN v1.5.3</title>
 <meta property="og:title" content="KOLUMN">
 <meta property="og:description" content="Skill-based arcade puzzle. Drop, rotate, match. Beat the clock.">
 <meta property="og:type" content="website">
@@ -258,16 +258,21 @@ if (window.innerWidth <= 600) {
     position: relative;
   }
 
-  /* Timer bar */
+  /* Timer bar — shared */
   .timer-wrap {
-    height: 6px;
-    background: var(--bg2);
-    border: 1px solid var(--border);
     border-radius: 3px;
     overflow: hidden;
     position: relative;
+  }
+  /* Desktop: horizontal bar above grid */
+  .desktop-timer {
+    height: 6px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
     width: calc(var(--cell-size) * 5 + var(--gap) * 4);
   }
+  /* Mobile: vertical bar in pocket — hidden on desktop */
+  .mobile-timer { display: none; }
 
   .timer-bar {
     height: 100%;
@@ -289,7 +294,8 @@ if (window.innerWidth <= 600) {
     50% { opacity: 0.6; }
   }
 
-  .mult-display {
+  /* Mult display — desktop: full grid width. Mobile: hidden by default */
+  .desktop-mult {
     font-family: 'Orbitron', sans-serif;
     font-size: 14px;
     font-weight: 700;
@@ -298,6 +304,7 @@ if (window.innerWidth <= 600) {
     height: 20px;
     width: calc(var(--cell-size) * 5 + var(--gap) * 4);
   }
+  .mobile-mult { display: none; }
 
   .mult-display.high { color: var(--glow); text-shadow: 0 0 10px rgba(0,240,255,0.5); }
   .mult-display.mid { color: #ffaa00; text-shadow: 0 0 8px rgba(255,170,0,0.4); }
@@ -814,22 +821,27 @@ if (window.innerWidth <= 600) {
       width: var(--cell-size-mobile);
     }
 
-    /* Timer stretches to fill space above stats */
-    .timer-wrap {
-      display: flex !important;
-      width: 6px !important;
-      flex: 1 !important;
-      height: auto !important;
+    /* Desktop timer/mult hidden on mobile */
+    .desktop-timer { display: none; }
+    .desktop-mult  { display: none; }
+
+    /* Mobile vertical timer in pocket */
+    .mobile-timer {
+      display: flex;
+      width: 6px;
+      flex: 1;
+      height: auto;
       min-height: 30px;
-      writing-mode: horizontal-tb;
-      transform: none;
+      background: var(--bg2);
+      border: 1px solid var(--border);
     }
 
-    /* Multiplier: bigger font */
-    .mult-display {
-      display: block !important;
-      width: var(--cell-size-mobile) !important;
-      font-size: 18px !important;
+    /* Mobile mult in pocket */
+    .mobile-mult {
+      display: block;
+      width: var(--cell-size-mobile);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 18px;
       font-weight: bold;
       text-align: center;
     }
@@ -913,7 +925,7 @@ if (window.innerWidth <= 600) {
 <body>
 
 <div class="grid-bg"></div>
-<div style="position:fixed;bottom:6px;right:8px;font-size:10px;opacity:0.3;font-family:'Share Tech Mono',monospace;z-index:999;pointer-events:none">v1.5.2</div>
+<div style="position:fixed;bottom:6px;right:8px;font-size:10px;opacity:0.3;font-family:'Share Tech Mono',monospace;z-index:999;pointer-events:none">v1.5.3</div>
 
 <div class="game-container">
   <!-- Left Panel -->
@@ -959,6 +971,10 @@ if (window.innerWidth <= 600) {
   <div class="game-board">
     <div class="game-board-left">
       <div class="falling-area" id="fallingRow"></div>
+      <div class="timer-wrap desktop-timer">
+        <div class="timer-bar" id="timerBar"></div>
+      </div>
+      <div class="mult-display desktop-mult high" id="multDisplay">&times;10.0</div>
       <div style="position:relative">
         <div class="grid" id="grid"></div>
         <div class="touch-zone" id="touchZone"></div>
@@ -974,10 +990,10 @@ if (window.innerWidth <= 600) {
       </div>
     </div>
     <div class="game-board-right">
-      <div class="timer-wrap">
-        <div class="timer-bar" id="timerBar"></div>
+      <div class="timer-wrap mobile-timer">
+        <div class="timer-bar" id="timerBarM"></div>
       </div>
-      <div class="mult-display high" id="multDisplay">&times;10.0</div>
+      <div class="mult-display mobile-mult high" id="multDisplayM">&times;10.0</div>
       <div class="pocket-spacer"></div>
       <div class="right-stats">
         <div class="panel-box"><div class="panel-label">score</div><div class="panel-value score" id="scoreVal">0</div></div>
@@ -1311,7 +1327,10 @@ function startTimerFrom(elapsed) {
   currentMult = 10.0;
   const bar = document.getElementById('timerBar');
   const multEl = document.getElementById('multDisplay');
+  const barM = document.getElementById('timerBarM');
+  const multM = document.getElementById('multDisplayM');
   bar.classList.remove('urgent');
+  if (barM) barM.classList.remove('urgent');
 
   function tick() {
     if (gameOver || busy || paused) return;
@@ -1321,16 +1340,23 @@ function startTimerFrom(elapsed) {
     currentMult = Math.round(currentMult * 10) / 10;
 
     bar.style.width = (pct * 100) + '%';
-    multEl.textContent = '\u00d7' + currentMult.toFixed(1);
+    if (barM) barM.style.width = (pct * 100) + '%';
 
-    if (currentMult >= 7.0) multEl.className = 'mult-display high';
-    else if (currentMult >= 4.0) multEl.className = 'mult-display mid';
-    else multEl.className = 'mult-display low';
+    multEl.textContent = '\u00d7' + currentMult.toFixed(1);
+    if (multM) multM.textContent = multEl.textContent;
+
+    const cls = currentMult >= 7.0 ? 'high' : currentMult >= 4.0 ? 'mid' : 'low';
+    multEl.className = 'mult-display ' + cls;
+    if (multM) multM.className = 'mult-display ' + cls;
 
     if (currentMult <= 1.5) {
       if (!bar.classList.contains('urgent')) SFX.timerWarn();
       bar.classList.add('urgent');
-    } else bar.classList.remove('urgent');
+      if (barM) barM.classList.add('urgent');
+    } else {
+      bar.classList.remove('urgent');
+      if (barM) barM.classList.remove('urgent');
+    }
 
     if (currentMult <= 1.0) { drop(); return; }
     timer = requestAnimationFrame(tick);
