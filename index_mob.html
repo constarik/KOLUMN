@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#0f1e32">
 <link rel="manifest" href="manifest.json">
 <title>KOLUMN</title>
-<script>const VERSION = 'v1.7.1';</script>
+<script>const VERSION = 'v1.7.2';</script>
 <meta property="og:title" content="KOLUMN">
 <meta property="og:description" content="Skill-based arcade puzzle. Drop, rotate, match. Beat the clock.">
 <meta property="og:type" content="website">
@@ -999,7 +999,7 @@ if (window.innerWidth <= 600) {
       </div>
       <div class="mult-display high" id="multDisplay">&times;10.0</div>
       <div class="pocket-aux">
-        <button class="btn start-btn blink-start" id="pauseBtn" onclick="togglePause()">START</button>
+        <button class="btn start-btn blink-start" id="pauseBtn" onclick="togglePause()">Go</button>
         <button class="btn btn-reset" onclick="resetGame()">&#8635;</button>
         <button class="btn" id="soundBtn" onclick="toggleSound()">&#128263;</button>
         <button class="btn" onclick="toggleInfo()">?</button>
@@ -1009,7 +1009,7 @@ if (window.innerWidth <= 600) {
 </div>
 
 <!-- Pause Blackout -->
-<div class="pause-blackout" id="pauseBlackout" onclick="togglePause();">
+<div class="pause-blackout" id="pauseBlackout" onclick="startFullscreen();">
   <div class="pause-blackout-text" id="pauseText">PAUSED</div>
   <div style="margin-top:16px;font-size:11px;color:var(--text)" id="pauseHint">tap to resume</div>
 </div>
@@ -1712,7 +1712,7 @@ function resetGame() {
   document.getElementById('pauseBlackout').classList.add('show');
   document.getElementById('pauseText').textContent = 'KOLUMN';
   document.getElementById('pauseHint').style.display = 'none';
-  document.getElementById('pauseBtn').textContent = 'START';
+  document.getElementById('pauseBtn').textContent = 'Go';
   document.getElementById('pauseBtn').classList.add('blink-start', 'start-btn');
   columns = [];
   for (let c = 0; c < COLS; c++) columns.push([]);
