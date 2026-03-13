@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#0f1e32">
 <link rel="manifest" href="manifest.json">
 <title>KOLUMN</title>
-<script>const VERSION = 'v1.7.7';</script>
+<script>const VERSION = 'v1.7.8';</script>
 <meta property="og:title" content="KOLUMN">
 <meta property="og:description" content="Skill-based arcade puzzle. Drop, rotate, match. Beat the clock.">
 <meta property="og:type" content="website">
@@ -1774,6 +1774,7 @@ function toggleInfo() {
   const THRESH = 30;
 
   zone.addEventListener('touchstart', e => {
+    if (!gameStarted) return;
     const t = e.touches[0];
     tx = t.clientX; ty = t.clientY;
     moved = false;
@@ -1781,7 +1782,7 @@ function toggleInfo() {
   }, {passive: false});
 
   zone.addEventListener('touchmove', e => {
-    if (moved) return;
+    if (!gameStarted || moved) return;
     const t = e.touches[0];
     const dx = t.clientX - tx;
     const dy = t.clientY - ty;
