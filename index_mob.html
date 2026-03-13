@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#0f1e32">
 <link rel="manifest" href="manifest.json">
 <title>KOLUMN</title>
-<script>const VERSION = 'v1.7.5';</script>
+<script>const VERSION = 'v1.7.6';</script>
 <meta property="og:title" content="KOLUMN">
 <meta property="og:description" content="Skill-based arcade puzzle. Drop, rotate, match. Beat the clock.">
 <meta property="og:type" content="website">
@@ -1009,8 +1009,9 @@ if (window.innerWidth <= 600) {
 </div>
 
 <!-- Pause Blackout -->
-<div class="pause-blackout" id="pauseBlackout" onclick="startFullscreen();">
+<div class="pause-blackout" id="pauseBlackout">
   <div class="pause-blackout-text" id="pauseText">PAUSED</div>
+  <button class="btn primary" id="resumeBtn" onclick="togglePause()" style="margin-top:24px;font-size:16px;letter-spacing:4px;padding:14px 40px;display:none">&#9654; RESUME</button>
   <div style="margin-top:16px;font-size:11px;color:var(--text)" id="pauseHint">tap to resume</div>
 </div>
 
@@ -1385,7 +1386,8 @@ function togglePause() {
     document.getElementById('dropBtn').disabled = true;
     if (!debugMode) {
       document.getElementById('pauseText').textContent = 'PAUSED';
-      document.getElementById('pauseHint').style.display = 'block';
+      document.getElementById('resumeBtn').style.display = 'inline-block';
+      document.getElementById('pauseHint').style.display = 'none';
       document.getElementById('pauseBlackout').classList.add('show');
     }
   } else {
@@ -1393,6 +1395,7 @@ function togglePause() {
     document.getElementById('pauseBtn').textContent = '\u23f8';
     document.getElementById('pauseBtn').style.color = '';
     document.getElementById('dropBtn').disabled = false;
+    document.getElementById('resumeBtn').style.display = 'none';
     document.getElementById('pauseBlackout').classList.remove('show');
     startTimerFrom(pausedElapsed);
   }
