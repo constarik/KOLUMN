@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#0f1e32">
 <link rel="manifest" href="manifest.json">
 <title>KOLUMN</title>
-<script>const VERSION = 'v1.6.3';</script>
+<script>const VERSION = 'v1.6.4';</script>
 <meta property="og:title" content="KOLUMN">
 <meta property="og:description" content="Skill-based arcade puzzle. Drop, rotate, match. Beat the clock.">
 <meta property="og:type" content="website">
@@ -190,7 +190,7 @@ if (window.innerWidth <= 600) {
     font-weight: 600;
     letter-spacing: 3px;
     text-transform: uppercase;
-    color: var(--text-dim);
+    color: var(--text);
     margin-bottom: 6px;
   }
 
@@ -221,7 +221,7 @@ if (window.innerWidth <= 600) {
   }
 
   .panel-value.bomb-used {
-    color: var(--text-dim);
+    color: var(--text);
     text-shadow: none;
   }
 
@@ -554,7 +554,7 @@ if (window.innerWidth <= 600) {
     left: 50%;
     transform: translateX(-50%);
     font-size: 10px;
-    color: var(--text-dim);
+    color: var(--text);
     text-align: center;
   }
 
@@ -564,7 +564,7 @@ if (window.innerWidth <= 600) {
     border-radius: 2px;
     padding: 1px 4px;
     font-size: 9px;
-    color: var(--text-dim);
+    color: var(--text);
   }
 
   .theme-switcher {
@@ -613,7 +613,7 @@ if (window.innerWidth <= 600) {
     font-size: 24px;
     font-weight: 700;
     letter-spacing: 6px;
-    color: var(--text-dim);
+    color: var(--text);
     animation: pauseBlink 2s ease-in-out infinite;
   }
 
@@ -704,7 +704,7 @@ if (window.innerWidth <= 600) {
   }
 
   .lb-list li .lb-rank {
-    color: var(--text-dim);
+    color: var(--text);
     width: 18px;
   }
 
@@ -715,7 +715,7 @@ if (window.innerWidth <= 600) {
   }
 
   .lb-list li .lb-date {
-    color: var(--text-dim);
+    color: var(--text);
     font-size: 10px;
   }
 
@@ -769,7 +769,7 @@ if (window.innerWidth <= 600) {
     }
     .ntb-label {
       font-size: 7px;
-      color: var(--text-dim);
+      color: var(--text);
       letter-spacing: 1px;
       text-transform: uppercase;
       white-space: nowrap;
@@ -972,7 +972,7 @@ if (window.innerWidth <= 600) {
         <button class="btn btn-rotate" onclick="rotate(1)">&#9656;</button>
         <button class="btn" id="pauseBtn" onclick="togglePause()">&#9208;</button>
         <button class="btn btn-reset" onclick="resetGame()">&#8635;</button>
-        <button class="btn" id="soundBtn" onclick="toggleSound()" title="Sound" style="opacity:0.4">&#128263;</button>
+        <button class="btn" id="soundBtn" onclick="toggleSound()" title="Sound" style="opacity:1">&#128263;</button>
         <button class="btn" id="infoBtn" onclick="toggleInfo()" title="Info" style="margin-left:8px">?</button>
       </div>
     </div>
@@ -1002,7 +1002,7 @@ if (window.innerWidth <= 600) {
 <!-- Pause Blackout -->
 <div class="pause-blackout" id="pauseBlackout">
   <div class="pause-blackout-text">PAUSED</div>
-  <div style="margin-top:16px;font-size:11px;color:var(--text-dim)">Press P to resume</div>
+  <div style="margin-top:16px;font-size:11px;color:var(--text)">Press P to resume</div>
 </div>
 
 <!-- Info Overlay -->
@@ -1017,10 +1017,10 @@ if (window.innerWidth <= 600) {
     <p><span class="info-key">Match:</span> N&sup2; &times; 10 &times; mult<br>
     <span class="info-key">Chain (3+):</span> N&sup2; &times; 5 &times; mult<br>
     <span class="info-key">Bomb:</span> N&sup2; &times; 30<br>
-    <span style="color:var(--text-dim);font-size:11px">N = number of cells cleared</span></p>
+    <span style="color:var(--text);font-size:11px">N = number of cells cleared</span></p>
     <h2 style="font-size:14px;margin-top:16px">BOMB</h2>
     <p>One-time rescue. Triggers automatically when columns get dangerously high (6+). Lands on a random column top and fires <span class="info-key">diagonal rays</span> downward, destroying cells in their path.</p>
-    <p style="margin-top:12px;color:var(--text-dim);font-size:11px">
+    <p style="margin-top:12px;color:var(--text);font-size:11px">
       Desktop: &larr;&rarr; rotate &middot; SPACE drop &middot; P pause<br>
       Mobile: swipe L/R rotate &middot; swipe down/tap drop
     </p>
@@ -1736,7 +1736,7 @@ document.addEventListener('keydown', e => {
 function toggleSound() {
   soundEnabled = !soundEnabled;
   document.getElementById('soundBtn').textContent = soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07';
-  document.getElementById('soundBtn').style.opacity = soundEnabled ? '1' : '0.4';
+  document.getElementById('soundBtn').style.opacity = soundEnabled ? '1' : '0.5';
   if (soundEnabled) audioCtx.resume();
 }
 
