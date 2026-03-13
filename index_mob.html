@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#0f1e32">
 <link rel="manifest" href="manifest.json">
 <title>KOLUMN</title>
-<script>const VERSION = 'v1.8.8';</script>
+<script>const VERSION = 'v1.8.9';</script>
 <meta property="og:title" content="KOLUMN">
 <meta property="og:description" content="Skill-based arcade puzzle. Drop, rotate, match. Beat the clock.">
 <meta property="og:type" content="website">
@@ -868,6 +868,35 @@ if (window.innerWidth <= 600) {
     .right-stats .panel-value.score { font-size: 10px; }
     .right-stats .panel-value.small { font-size: 10px; }
 
+    /* Stats in pocket */
+    .pocket-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      width: 100%;
+      margin-bottom: 4px;
+    }
+    .ps-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1px 2px;
+    }
+    .ps-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 9px;
+      color: var(--text);
+      text-transform: uppercase;
+      opacity: 0.6;
+    }
+    .ps-val {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      color: var(--glow);
+      font-weight: bold;
+    }
+    .ps-val.score { font-size: 10px; }
+
     /* Aux buttons in pocket — stretch to fill space, equal height buttons */
     .pocket-aux {
       display: flex;
@@ -998,6 +1027,13 @@ if (window.innerWidth <= 600) {
         <div class="timer-bar" id="timerBar"></div>
       </div>
       <div class="mult-display high" id="multDisplay">&times;10.0</div>
+      <div class="pocket-stats">
+        <div class="ps-row"><span class="ps-label">score</span><span class="ps-val score" id="pocketScore">0</span></div>
+        <div class="ps-row"><span class="ps-label">drops</span><span class="ps-val" id="pocketDrops">0</span></div>
+        <div class="ps-row"><span class="ps-label">clrd</span><span class="ps-val" id="pocketCleared">0</span></div>
+        <div class="ps-row"><span class="ps-label">chain</span><span class="ps-val" style="color:#ffd700" id="pocketChains">0</span></div>
+        <div class="ps-row"><span class="ps-label">bomb</span><span class="ps-val bomb-ready" id="pocketBomb">&#9650;</span></div>
+      </div>
       <div class="pocket-aux">
         <button class="btn" id="pocketPauseBtn" onclick="pocketAction()">&#9208;</button>
         <button class="btn btn-reset" onclick="resetGame()">&#8635;</button>
@@ -1512,6 +1548,8 @@ async function drop() {
       bombUsed = true;
       document.getElementById('bombVal').textContent = '\u2014';
       document.getElementById('bombVal').className = 'panel-value bomb-used';
+      document.getElementById('pocketBomb').textContent = '\u2014';
+      document.getElementById('pocketBomb').className = 'ps-val bomb-used';
 
       const bombCol = Math.floor(Math.random() * COLS);
       const bombRow = columns[bombCol].length - 1;
@@ -1717,10 +1755,15 @@ function renderGridBomb(highlightSet, bombOrigin) {
 }
 
 function updateStats() {
-  document.getElementById('scoreVal').textContent = score.toLocaleString();
+  const s = score.toLocaleString();
+  document.getElementById('scoreVal').textContent = s;
   document.getElementById('dropsVal').textContent = totalDrops;
   document.getElementById('clearedVal').textContent = totalCleared;
   document.getElementById('chainsVal').textContent = totalChains;
+  document.getElementById('pocketScore').textContent = s;
+  document.getElementById('pocketDrops').textContent = totalDrops;
+  document.getElementById('pocketCleared').textContent = totalCleared;
+  document.getElementById('pocketChains').textContent = totalChains;
 }
 
 // ===== INIT =====
@@ -1736,6 +1779,8 @@ function resetGame() {
   gameStarted = false;
   document.getElementById('bombVal').textContent = '\u25b2';
   document.getElementById('bombVal').className = 'panel-value bomb-ready';
+  document.getElementById('pocketBomb').textContent = '\u25b2';
+  document.getElementById('pocketBomb').className = 'ps-val bomb-ready';
   document.getElementById('pauseBtn').textContent = '\u25b6';
   document.getElementById('pauseBtn').style.color = 'var(--glow)';
   document.getElementById('pocketPauseBtn').textContent = 'Go';
