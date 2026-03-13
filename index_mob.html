@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#0f1e32">
 <link rel="manifest" href="manifest.json">
 <title>KOLUMN</title>
-<script>const VERSION = 'v1.6.5';</script>
+<script>const VERSION = 'v1.6.6';</script>
 <meta property="og:title" content="KOLUMN">
 <meta property="og:description" content="Skill-based arcade puzzle. Drop, rotate, match. Beat the clock.">
 <meta property="og:type" content="website">
@@ -24,8 +24,8 @@ function setMobileViewport() {
   if (window.innerWidth <= 600) {
     const vh = window.innerHeight;
     const vw = window.innerWidth;
-    const cellByW = (vw - 40) / 6;   // 5 grid + 1 pocket
-    const cellByH = (vh - 130) / 10; // 10 grid rows, no strip row
+    const cellByW = (vw - 16) / 6;      // 5 grid + 1 pocket, 8px padding each side
+    const cellByH = (vh - 200) / 11;    // 10 grid rows + 1 falling strip row, controls + next bar
     const cell = Math.min(cellByW, cellByH);
     document.documentElement.style.setProperty('--cell-size-mobile', cell + 'px');
     document.documentElement.style.setProperty('--cell-size', cell + 'px');
