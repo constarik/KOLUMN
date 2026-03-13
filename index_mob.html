@@ -769,8 +769,23 @@ if (window.innerWidth <= 600) {
     .next-top-bar {
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 3px;
-      padding: 0 2px;
+      padding: 0 4px;
+      width: 100%;
+    }
+    .ntb-left {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .ntb-score {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 13px;
+      font-weight: bold;
+      color: var(--glow);
+      text-shadow: 0 0 8px color-mix(in srgb, var(--glow) 50%, transparent);
+      letter-spacing: 1px;
     }
     .ntb-label {
       font-size: 11px;
@@ -1002,8 +1017,11 @@ if (window.innerWidth <= 600) {
 
   <!-- Mobile NEXT bar (hidden on desktop) -->
   <div class="next-top-bar">
-    <span class="ntb-label">next</span>
-    <div class="next-row" id="nextRowMobile"></div>
+    <div class="ntb-left">
+      <span class="ntb-label">next</span>
+      <div class="next-row" id="nextRowMobile"></div>
+    </div>
+    <div class="ntb-score" id="ntbScore">0</div>
   </div>
 
   <!-- Main Board -->
@@ -1776,6 +1794,7 @@ function updateStats() {
   document.getElementById('pocketDrops').textContent = totalDrops;
   document.getElementById('pocketCleared').textContent = totalCleared;
   document.getElementById('pocketChains').textContent = totalChains;
+  document.getElementById('ntbScore').textContent = s;
 }
 
 // ===== INIT =====
