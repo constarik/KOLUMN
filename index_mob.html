@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#0f1e32">
 <link rel="manifest" href="manifest.json">
 <title>KOLUMN</title>
-<script>const VERSION = 'v1.8.1';</script>
+<script>const VERSION = 'v1.8.2';</script>
 <meta property="og:title" content="KOLUMN">
 <meta property="og:description" content="Skill-based arcade puzzle. Drop, rotate, match. Beat the clock.">
 <meta property="og:type" content="website">
@@ -1417,7 +1417,7 @@ function rotate(dir) {
 const delay = ms => new Promise(r => setTimeout(r, ms));
 
 async function drop() {
-  if (gameOver || busy || paused) return;
+  if (!gameStarted || gameOver || busy || paused) return;
   busy = true;
   const dropMult = currentMult;
   stopTimer();
@@ -1726,7 +1726,8 @@ function resetGame() {
   document.getElementById('bombVal').className = 'panel-value bomb-ready';
   document.getElementById('pauseBtn').textContent = '\u25b6';
   document.getElementById('pauseBtn').style.color = 'var(--glow)';
-  document.getElementById('pocketPauseBtn').textContent = 'Go'; document.getElementById('pocketPauseBtn').classList.add('blink-start', 'start-btn');
+  document.getElementById('pocketPauseBtn').textContent = '\u23f8';
+  document.getElementById('pocketPauseBtn').classList.remove('blink-start', 'start-btn');
   document.getElementById('dropBtn').disabled = true;
   falling = generate();
   nextPiece = generate();
@@ -1841,16 +1842,7 @@ function renderLeaderboard(container, currentScore) {
 }
 
 // ===== MOBILE CELL SIZE =====
-function setCellSize() {
-  if (window.innerWidth <= 600) {
-    const maxW = window.innerWidth - 24;
-    const sz = Math.floor((maxW - 2 * 4) / 5); // 5 cols, 4 gaps of 2px
-    document.documentElement.style.setProperty('--cell-size-mobile', sz + 'px');
-  }
-}
-window.addEventListener('resize', setCellSize);
-setCellSize();
-
+// setCellSize() removed — setMobileViewport() in <head> handles this correctly
 setTheme('ocean');
 resetGame();
 </script>
