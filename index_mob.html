@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#0f1e32">
 <link rel="manifest" href="manifest.json">
 <title>KOLUMN</title>
-<script>const VERSION = 'v1.6.4';</script>
+<script>const VERSION = 'v1.6.5';</script>
 <meta property="og:title" content="KOLUMN">
 <meta property="og:description" content="Skill-based arcade puzzle. Drop, rotate, match. Beat the clock.">
 <meta property="og:type" content="website">
@@ -39,6 +39,11 @@ function tryFullscreen() {
   if (el.requestFullscreen) el.requestFullscreen();
   else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
   setTimeout(setMobileViewport, 300);
+}
+
+function startFullscreen() {
+  tryFullscreen();
+  if (paused && !gameOver) togglePause();
 }
 // Auto-prompt fullscreen on first tap (mobile only)
 if (window.innerWidth <= 600) {
@@ -863,18 +868,30 @@ if (window.innerWidth <= 600) {
     .right-stats .panel-value.score { font-size: 10px; }
     .right-stats .panel-value.small { font-size: 10px; }
 
-    /* Aux buttons in pocket */
+    /* Aux buttons in pocket — stretch to fill space, equal height buttons */
     .pocket-aux {
       display: flex;
       flex-direction: column;
       gap: 2px;
       width: var(--cell-size-mobile);
+      flex: 1;
     }
     .pocket-aux .btn {
       width: 100%;
-      padding: 5px 0;
+      flex: 1;
+      padding: 0;
       font-size: 12px;
       margin-left: 0 !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .pocket-aux .btn.start-btn {
+      font-size: 9px;
+      font-family: 'Orbitron', sans-serif;
+      letter-spacing: 1px;
+      border-color: var(--glow);
+      color: var(--glow);
     }
 
     /* Controls: only ◄ DROP ► — full grid width, tall, equal */
@@ -981,15 +998,8 @@ if (window.innerWidth <= 600) {
         <div class="timer-bar" id="timerBar"></div>
       </div>
       <div class="mult-display high" id="multDisplay">&times;10.0</div>
-      <div class="pocket-spacer"></div>
-      <div class="right-stats">
-        <div class="panel-box"><div class="panel-label">score</div><div class="panel-value score" id="scoreVal">0</div></div>
-        <div class="panel-box"><div class="panel-label">drops</div><div class="panel-value small" id="dropsVal">0</div></div>
-        <div class="panel-box"><div class="panel-label">clrd</div><div class="panel-value small" id="clearedVal">0</div></div>
-        <div class="panel-box"><div class="panel-label">chain</div><div class="panel-value small" style="color:#ffd700" id="chainsVal">0</div></div>
-        <div class="panel-box"><div class="panel-label">bomb</div><div class="panel-value bomb-ready" id="bombVal">&#9650;</div></div>
-      </div>
       <div class="pocket-aux">
+        <button class="btn start-btn" onclick="startFullscreen()">START</button>
         <button class="btn" onclick="togglePause()">&#9208;</button>
         <button class="btn btn-reset" onclick="resetGame()">&#8635;</button>
         <button class="btn" onclick="toggleSound()">&#128263;</button>
