@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#0f1e32">
 <link rel="manifest" href="manifest.json">
 <title>KOLUMN</title>
-<script>const VERSION = 'v1.9.0';</script>
+<script src="version.js"></script>
 <meta property="og:title" content="KOLUMN">
 <meta property="og:description" content="Skill-based arcade puzzle. Drop, rotate, match. Beat the clock.">
 <meta property="og:type" content="website">
@@ -1373,15 +1373,15 @@ function startTimerFrom(elapsed) {
 
     if (currentMult >= 7.0) {
       multEl.className = 'mult-display high';
-      bar.style.background = 'linear-gradient(90deg, var(--glow), var(--glow2))';
+      bar.style.background = 'var(--glow)';
       bar.style.boxShadow = '0 0 8px color-mix(in srgb, var(--glow) 50%, transparent)';
     } else if (currentMult >= 4.0) {
       multEl.className = 'mult-display mid';
-      bar.style.background = 'linear-gradient(90deg, #ff8800, #ffdd00)';
+      bar.style.background = '#ffaa00';
       bar.style.boxShadow = '0 0 8px rgba(255,170,0,0.5)';
     } else {
       multEl.className = 'mult-display low';
-      bar.style.background = 'linear-gradient(90deg, #cc0000, #ff3333)';
+      bar.style.background = '#ff3333';
       bar.style.boxShadow = '0 0 8px rgba(255,51,51,0.6)';
     }
 
