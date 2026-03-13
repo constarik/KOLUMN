@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#0f1e32">
 <link rel="manifest" href="manifest.json">
 <title>KOLUMN</title>
-<script>const VERSION = 'v1.8.6';</script>
+<script>const VERSION = 'v1.8.7';</script>
 <meta property="og:title" content="KOLUMN">
 <meta property="og:description" content="Skill-based arcade puzzle. Drop, rotate, match. Beat the clock.">
 <meta property="og:type" content="website">
@@ -1011,7 +1011,7 @@ if (window.innerWidth <= 600) {
 <!-- Pause Blackout -->
 <div class="pause-blackout" id="pauseBlackout">
   <div class="pause-blackout-text" id="pauseText">PAUSED</div>
-  <button class="btn primary blink-start" id="runBtn" onclick="tryFullscreen()" style="margin-top:24px;font-size:18px;letter-spacing:4px;padding:16px 48px">Run</button>
+  <button class="btn primary blink-start" id="runBtn" onclick="tryFullscreen();document.getElementById('pauseBlackout').classList.remove('show')" style="margin-top:24px;font-size:18px;letter-spacing:4px;padding:16px 48px">Run</button>
   <button class="btn primary" id="resumeBtn" onclick="togglePause()" style="margin-top:24px;font-size:16px;letter-spacing:4px;padding:14px 40px;display:none">&#9654; RESUME</button>
 </div>
 
@@ -1719,7 +1719,6 @@ function resetGame() {
   document.getElementById('gameOverlay').classList.remove('show');
   document.getElementById('pauseBlackout').classList.add('show');
   document.getElementById('pauseText').textContent = 'KOLUMN';
-  document.getElementById('goBtn').style.display = 'inline-block';
   document.getElementById('resumeBtn').style.display = 'none';
   columns = [];
   for (let c = 0; c < COLS; c++) columns.push([]);
