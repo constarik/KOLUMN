@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#0f1e32">
 <link rel="manifest" href="manifest.json">
 <title>KOLUMN</title>
-<script>const VERSION = 'v1.7.8';</script>
+<script>const VERSION = 'v1.7.9';</script>
 <meta property="og:title" content="KOLUMN">
 <meta property="og:description" content="Skill-based arcade puzzle. Drop, rotate, match. Beat the clock.">
 <meta property="og:type" content="website">
@@ -1011,7 +1011,7 @@ if (window.innerWidth <= 600) {
 <!-- Pause Blackout -->
 <div class="pause-blackout" id="pauseBlackout">
   <div class="pause-blackout-text" id="pauseText">PAUSED</div>
-  <button class="btn primary blink-start" id="goBtn" onclick="togglePause()" style="margin-top:24px;font-size:18px;letter-spacing:4px;padding:16px 48px">Go</button>
+  <button class="btn primary blink-start" id="goBtn" onclick="startGame()" style="margin-top:24px;font-size:18px;letter-spacing:4px;padding:16px 48px">Go</button>
   <button class="btn primary" id="resumeBtn" onclick="togglePause()" style="margin-top:24px;font-size:16px;letter-spacing:4px;padding:14px 40px;display:none">&#9654; RESUME</button>
 </div>
 
@@ -1359,24 +1359,23 @@ const debugMode = new URLSearchParams(window.location.search).get('debug') === '
 // ===== START / PAUSE =====
 let gameStarted = false;
 
-function togglePause() {
-  if (gameOver) return;
+function startGame() {
+  if (gameStarted || gameOver) return;
+  tryFullscreen();
+  audioCtx.resume();
+  gameStarted = true;
+  paused = false;
+  document.getElementById('pauseBtn').textContent = '\u23f8';
+  document.getElementById('pauseBtn').style.color = '';
+  document.getElementById('dropBtn').disabled = false;
+  document.getElementById('goBtn').style.display = 'none';
+  document.getElementById('pauseBlackout').classList.remove('show');
+  SFX.start();
+  startTimer();
+}
 
-  // First press = start game
-  if (!gameStarted) {
-    audioCtx.resume();
-    gameStarted = true;
-    paused = false;
-    document.getElementById('pauseBtn').textContent = '\u23f8';
-    document.getElementById('pauseBtn').style.color = '';
-    document.getElementById('pauseBtn').classList.remove('blink-start', 'start-btn');
-    document.getElementById('dropBtn').disabled = false;
-    document.getElementById('goBtn').style.display = 'none';
-    document.getElementById('pauseBlackout').classList.remove('show');
-    SFX.start();
-    startTimer();
-    return;
-  }
+function togglePause() {
+  if (gameOver || !gameStarted) return;
 
   if (!paused) {
     paused = true;
