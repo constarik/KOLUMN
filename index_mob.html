@@ -10,6 +10,8 @@ window.fbReadyResolve = null;
 window.fbReady = new Promise(r => { window.fbReadyResolve = r; });
 
 const WORKER_URL = 'https://kolumn-worker.constr.workers.dev';
+const FS_URL = 'https://firestore.googleapis.com/v1/projects/holepuncher-constr/databases/(default)/documents';
+const FS_KEY = ["AIzaSyCqQSfmsv0ru", "NWFoHEG93bTBpJxMbww8nM"].join('');
 
 window.saveGlobalScore = async function(initData, score) {
   const res = await fetch(WORKER_URL + '/score', {
@@ -21,8 +23,13 @@ window.saveGlobalScore = async function(initData, score) {
 };
 
 window.loadGlobalTop = async function() {
-  const res = await fetch(WORKER_URL + '/top');
-  return res.json();
+  const res = await fetch(`${FS_URL}/kolumn_scores?key=${FS_KEY}&pageSize=200`);
+  const data = await res.json();
+  const docs = data.documents || [];
+  return docs.map(d => ({
+    username: d.fields?.username?.stringValue || 'Player',
+    score: parseInt(d.fields?.score?.integerValue || 0),
+  })).sort((a, b) => b.score - a.score).slice(0, 10);
 };
 
 window.fbReadyResolve();
