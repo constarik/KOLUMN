@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -35,9 +36,15 @@ setMobileViewport();
 window.addEventListener('resize', setMobileViewport);
 
 function tryFullscreen() {
-  const el = document.documentElement;
-  if (el.requestFullscreen) el.requestFullscreen();
-  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  const tg = window.Telegram?.WebApp;
+  if (tg) {
+    tg.expand();
+    tg.disableVerticalSwipes?.();
+  } else {
+    const el = document.documentElement;
+    if (el.requestFullscreen) el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  }
   setTimeout(setMobileViewport, 300);
 }
 
@@ -1899,6 +1906,24 @@ function renderLeaderboard(container, currentScore) {
 // setCellSize() removed — setMobileViewport() in <head> handles this correctly
 setTheme('ocean');
 resetGame();
+
+// ===== TELEGRAM INIT =====
+(function() {
+  const tg = window.Telegram?.WebApp;
+  if (!tg) return;
+  tg.ready();
+  tg.expand();
+  tg.disableVerticalSwipes?.();
+  // Show username in pause overlay if available
+  const user = tg.initDataUnsafe?.user;
+  if (user) {
+    const name = user.first_name || user.username || '';
+    if (name) {
+      const el = document.getElementById('pauseText');
+      if (el) el.textContent = 'KOLUMN · ' + name;
+    }
+  }
+})();
 </script>
 <script>
   document.title = 'KOLUMN ' + VERSION;
