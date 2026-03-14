@@ -677,7 +677,9 @@ if (window.innerWidth <= 600) {
     z-index: 400;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
+    padding: 40px 20px 20px;
+    overflow-y: auto;
   }
 
   .pause-blackout.show { display: flex; }
@@ -1099,6 +1101,7 @@ if (window.innerWidth <= 600) {
 <div class="pause-blackout" id="pauseBlackout">
   <div class="pause-blackout-text" id="pauseText">PAUSED</div>
   <button class="btn primary blink-start" id="runBtn" onclick="runAction()" style="margin-top:24px;font-size:18px;letter-spacing:4px;padding:16px 48px">Run</button>
+  <div id="overlayLeaderboard" style="margin-top:16px;width:100%;max-width:320px"></div>
 </div>
 
 <!-- Info Overlay -->
@@ -2002,16 +2005,35 @@ resetGame();
   tg.ready();
   tg.expand();
   tg.disableVerticalSwipes?.();
-  // Show username in pause overlay if available
   const user = tg.initDataUnsafe?.user;
   if (user) {
     const name = user.first_name || user.username || '';
     if (name) {
       const el = document.getElementById('pauseText');
-      if (el) el.textContent = 'KOLUMN · ' + name;
+      if (el && el.textContent === 'KOLUMN') el.textContent = 'KOLUMN · ' + name;
     }
   }
 })();
+
+// ===== LOAD TOP ON START =====
+async function renderOverlayTop() {
+  const el = document.getElementById('overlayLeaderboard');
+  if (!el) return;
+  try {
+    await window.fbReady;
+    const top = await window.loadGlobalTop();
+    if (!top.length) return;
+    let html = '<div class="lb-global-title">🌍 TOP</div><ul class="lb-list">';
+    top.forEach((e, i) => {
+      html += `<li><span class="lb-rank">#${i+1}</span>`;
+      html += `<span class="lb-score">${e.score.toLocaleString()}</span>`;
+      html += `<span class="lb-date">${e.username}</span></li>`;
+    });
+    html += '</ul>';
+    el.innerHTML = html;
+  } catch(e) { /* silent */ }
+}
+renderOverlayTop();
 </script>
 <script>
   document.title = 'KOLUMN ' + VERSION;
