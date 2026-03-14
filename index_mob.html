@@ -8,37 +8,21 @@
 // Firebase readiness promise — resolved when module loads
 window.fbReadyResolve = null;
 window.fbReady = new Promise(r => { window.fbReadyResolve = r; });
-</script>
-<script type="module">
-// ===== FIREBASE GLOBAL LEADERBOARD =====
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp }
-  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-const _a = ["AIzaSyCqQSfmsv0ru", "NWFoHEG93bTBpJxMbww8nM"].join('');
-const fbApp = initializeApp({
-  apiKey: _a,
-  authDomain: "holepuncher-constr.firebaseapp.com",
-  projectId: "holepuncher-constr",
-  storageBucket: "holepuncher-constr.firebasestorage.app",
-  databaseURL: "https://holepuncher-constr-default-rtdb.europe-west1.firebasedatabase.app"
-});
-const db = getFirestore(fbApp);
+const WORKER_URL = 'https://kolumn-worker.constr.workers.dev';
 
-window.saveGlobalScore = async function(username, score) {
-  try {
-    await addDoc(collection(db, 'kolumn_scores'), {
-      username, score, ts: serverTimestamp()
-    });
-  } catch(e) { console.warn('FB save error', e); }
+window.saveGlobalScore = async function(initData, score) {
+  const res = await fetch(WORKER_URL + '/score', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ initData, score })
+  });
+  return res.json();
 };
 
 window.loadGlobalTop = async function() {
-  try {
-    const q = query(collection(db, 'kolumn_scores'), orderBy('score', 'desc'), limit(10));
-    const snap = await getDocs(q);
-    return snap.docs.map(d => d.data());
-  } catch(e) { console.warn('FB load error', e); return []; }
+  const res = await fetch(WORKER_URL + '/top');
+  return res.json();
 };
 
 window.fbReadyResolve();
@@ -1700,14 +1684,15 @@ async function drop() {
     lb.innerHTML = '<div class="lb-global-title">⏳ loading...</div>';
     try {
       await window.fbReady;
-      const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
-      const uname = tgUser ? (tgUser.username || tgUser.first_name || 'Player') : 'Player';
-      await window.saveGlobalScore(uname, score);
+      const initData = window.Telegram?.WebApp?.initData || '';
+      await window.saveGlobalScore(initData, score);
       const top = await window.loadGlobalTop();
       if (top.length) {
         let html = '<div class="lb-global-title">🌍 TOP</div><ul class="lb-list">';
         top.forEach((e, i) => {
-          const isMe = e.username === uname && e.score === score;
+          const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+          const myName = tgUser ? (tgUser.username || tgUser.first_name || '') : '';
+          const isMe = e.username === myName && e.score === score;
           html += `<li class="${isMe ? 'lb-new' : ''}">`;
           html += `<span class="lb-rank">#${i+1}</span>`;
           html += `<span class="lb-score">${e.score.toLocaleString()}</span>`;
