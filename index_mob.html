@@ -1692,7 +1692,8 @@ async function drop() {
     try {
       await window.fbReady;
       const initData = window.Telegram?.WebApp?.initData || '';
-      await window.saveGlobalScore(initData, score);
+      const saveResult = await window.saveGlobalScore(initData, score);
+      console.log('saveGlobalScore result:', JSON.stringify(saveResult));
       const top = await window.loadGlobalTop();
       if (top.length) {
         let html = '<div class="lb-global-title">🌍 TOP</div><ul class="lb-list">';
@@ -1713,6 +1714,7 @@ async function drop() {
         renderLeaderboard(lb, score);
       }
     } catch(e) {
+      console.error('Global score error:', e);
       lb.innerHTML = '';
       renderLeaderboard(lb, score);
     }
