@@ -1666,18 +1666,17 @@ async function drop() {
       `Bomb: ${bombUsed ? 'detonated' : 'unused'}`;
     saveScore(score);
     SFX.gameOver();
-    // Local leaderboard
-    renderLeaderboard(document.getElementById('goLeaderboard'), score);
     document.getElementById('gameOverlay').classList.add('show');
     busy = false;
     // Global leaderboard
     const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
     const uname = tgUser ? (tgUser.username || tgUser.first_name || 'Player') : 'Player';
-    if (window.saveGlobalScore) window.saveGlobalScore(uname, score);
+    const lb = document.getElementById('goLeaderboard');
+    lb.innerHTML = '<div class="lb-global-title">loading...</div>';
+    if (window.saveGlobalScore) await window.saveGlobalScore(uname, score);
     if (window.loadGlobalTop) {
-      window.loadGlobalTop().then(top => {
-        if (!top.length) return;
-        const lb = document.getElementById('goLeaderboard');
+      const top = await window.loadGlobalTop();
+      if (top.length) {
         let html = '<div class="lb-global-title">🌍 TOP</div><ul class="lb-list">';
         top.forEach((e, i) => {
           const isMe = e.username === uname && e.score === score;
@@ -1689,7 +1688,13 @@ async function drop() {
         });
         html += '</ul>';
         lb.innerHTML = html;
-      });
+      } else {
+        lb.innerHTML = '';
+        renderLeaderboard(lb, score);
+      }
+    } else {
+      lb.innerHTML = '';
+      renderLeaderboard(lb, score);
     }
     return;
   }
