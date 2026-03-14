@@ -766,51 +766,21 @@ if (window.innerWidth <= 600) {
     .left-panel { display: none; }
 
     /* NEXT top bar: inline row above grid */
-    .next-top-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 3px;
-      padding: 0 2px;
-    }
-    .ntb-left {
-      display: flex;
-      align-items: center;
-      gap: 3px;
-    }
-    .ntb-score {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 18px;
-      font-weight: bold;
-      color: var(--glow);
-      text-shadow: 0 0 8px color-mix(in srgb, var(--glow) 50%, transparent);
-      letter-spacing: 1px;
-    }
-    .ntb-label {
-      font-size: 11px;
-      color: var(--glow);
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      white-space: nowrap;
-      margin-right: 4px;
-      font-weight: 700;
-      text-shadow: 0 0 8px color-mix(in srgb, var(--glow) 50%, transparent);
-    }
-    .next-top-bar .next-row {
-      display: flex;
-      gap: 2px;
-    }
-    .next-top-bar .next-cell {
-      width: calc(var(--cell-size-mobile) * 0.47);
-      height: calc(var(--cell-size-mobile) * 0.47);
+    /* Score bar above grid */
+    .mob-score-bar {
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
+      width: 100%;
+      padding: 0 2px 2px;
     }
-    .next-top-bar .next-cell canvas {
-      width: calc(var(--cell-size-mobile) * 0.47) !important;
-      height: calc(var(--cell-size-mobile) * 0.47) !important;
+    .mob-score-val {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 26px;
+      font-weight: 900;
+      color: var(--glow);
+      text-shadow: 0 0 12px color-mix(in srgb, var(--glow) 60%, transparent);
+      letter-spacing: 2px;
     }
 
     /* Game board: grid left, pocket right */
@@ -1014,17 +984,11 @@ if (window.innerWidth <= 600) {
     </div>
   </div>
 
-  <!-- Mobile NEXT bar (hidden on desktop) -->
-
   <!-- Main Board -->
   <div class="game-board">
     <div class="game-board-left">
-      <div class="next-top-bar">
-        <div class="ntb-left">
-          <span class="ntb-label">next</span>
-          <div class="next-row" id="nextRowMobile"></div>
-        </div>
-        <div class="ntb-score" id="ntbScore">0</div>
+      <div class="mob-score-bar">
+        <span class="mob-score-val" id="ntbScore">0</span>
       </div>
       <div class="falling-area" id="fallingRow"></div>
       <div style="position:relative">
@@ -1698,8 +1662,7 @@ function renderNext() {
     mobileSize = Math.round(cell * 0.47);
   }
   const rows = [
-    { id: 'nextRow',       size: 32 },
-    { id: 'nextRowMobile', size: mobileSize }
+    { id: 'nextRow', size: 32 }
   ];
   rows.forEach(({ id, size }) => {
     const row = document.getElementById(id);
