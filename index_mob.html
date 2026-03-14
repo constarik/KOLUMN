@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+// Firebase readiness promise — resolved when module loads
+window.fbReadyResolve = null;
+window.fbReady = new Promise(r => { window.fbReadyResolve = r; });
+</script>
 <script type="module">
 // ===== FIREBASE GLOBAL LEADERBOARD =====
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
@@ -35,6 +40,8 @@ window.loadGlobalTop = async function() {
     return snap.docs.map(d => d.data());
   } catch(e) { console.warn('FB load error', e); return []; }
 };
+
+window.fbReadyResolve();
 </script>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -525,7 +532,9 @@ if (window.innerWidth <= 600) {
     z-index: 500;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
+    padding: 40px 20px 20px;
+    overflow-y: auto;
     backdrop-filter: blur(4px);
   }
 
@@ -1669,12 +1678,13 @@ async function drop() {
     document.getElementById('gameOverlay').classList.add('show');
     busy = false;
     // Global leaderboard
-    const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
-    const uname = tgUser ? (tgUser.username || tgUser.first_name || 'Player') : 'Player';
     const lb = document.getElementById('goLeaderboard');
-    lb.innerHTML = '<div class="lb-global-title">loading...</div>';
-    if (window.saveGlobalScore) await window.saveGlobalScore(uname, score);
-    if (window.loadGlobalTop) {
+    lb.innerHTML = '<div class="lb-global-title">⏳ loading...</div>';
+    try {
+      await window.fbReady;
+      const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+      const uname = tgUser ? (tgUser.username || tgUser.first_name || 'Player') : 'Player';
+      await window.saveGlobalScore(uname, score);
       const top = await window.loadGlobalTop();
       if (top.length) {
         let html = '<div class="lb-global-title">🌍 TOP</div><ul class="lb-list">';
@@ -1684,7 +1694,7 @@ async function drop() {
           html += `<span class="lb-rank">#${i+1}</span>`;
           html += `<span class="lb-score">${e.score.toLocaleString()}</span>`;
           html += `<span class="lb-date">${e.username}</span>`;
-          html += `</li>`;
+          html += '</li>';
         });
         html += '</ul>';
         lb.innerHTML = html;
@@ -1692,7 +1702,7 @@ async function drop() {
         lb.innerHTML = '';
         renderLeaderboard(lb, score);
       }
-    } else {
+    } catch(e) {
       lb.innerHTML = '';
       renderLeaderboard(lb, score);
     }
