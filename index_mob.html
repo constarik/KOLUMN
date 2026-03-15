@@ -1982,29 +1982,33 @@ const SHARE_LANGS = [
   { code: 'de', label: 'DE' },
   { code: 'tr', label: 'TR' },
 ];
-const SHARE_EN = '🕹 KOLUMN — scored {score} points!\nBeat my score: @KolumnGameBot';
+const SHARE_EN = '🕹 KOLUMN — scored 123 points!\nBeat my score: @KolumnGameBot';
+const SHARE_EN_PLACEHOLDER = '123 points';
 let shareLang = localStorage.getItem('kolumn_lang') || 'en';
 let shareCache = {};
 try { shareCache = JSON.parse(localStorage.getItem('kolumn_share_cache') || '{}'); } catch(e) {}
 
-async function translateShare(text, lang) {
-  if (lang === 'en') return text;
-  const key = lang + ':' + text.slice(0, 20);
-  if (shareCache[key]) return shareCache[key];
+async function translateShare(lang) {
+  if (lang === 'en') return SHARE_EN;
+  if (shareCache[lang]) return shareCache[lang];
   try {
-    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${lang}&dt=t&q=${encodeURIComponent(text)}`;
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${lang}&dt=t&q=${encodeURIComponent(SHARE_EN)}`;
     const res = await fetch(url);
     const data = await res.json();
     const translated = data[0].map(s => s[0]).join('');
-    shareCache[key] = translated;
+    shareCache[lang] = translated;
     localStorage.setItem('kolumn_share_cache', JSON.stringify(shareCache));
     return translated;
-  } catch(e) { return text; }
+  } catch(e) { return SHARE_EN; }
 }
 
 async function shareResult() {
-  const base = SHARE_EN.replace('{score}', score.toLocaleString());
-  const text = await translateShare(base, shareLang);
+  const template = await translateShare(shareLang);
+  // Replace translated "123 points" placeholder with real score
+  // Find the placeholder in translated text and replace with actual score
+  const realScore = score.toLocaleString();
+  // Try to replace "123" in the translated text with real score
+  const text = template.replace(/123/, realScore);
   const tg = window.Telegram?.WebApp;
   if (tg) {
     tg.openTelegramLink(`https://t.me/share/url?url=https://t.me/KolumnGameBot&text=${encodeURIComponent(text)}`);
