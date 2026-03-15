@@ -922,15 +922,26 @@ if (window.innerWidth <= 600) {
       width: var(--cell-size-mobile);
     }
 
-    /* Timer stretches to fill space above stats */
+    /* Timer: move to top above grid, horizontal thin bar */
     .timer-wrap {
-      display: flex !important;
-      width: 6px !important;
-      flex: 1 !important;
-      height: auto !important;
-      min-height: 30px;
-      writing-mode: horizontal-tb;
-      transform: none;
+      display: none !important;
+    }
+    .timer-wrap-mob {
+      display: block;
+      width: calc(5 * var(--cell-size-mobile) + 4 * 2px);
+      height: 5px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 4px;
+    }
+    .timer-bar-mob {
+      height: 100%;
+      border-radius: 3px;
+      width: 100%;
+      background: var(--glow);
+      box-shadow: 0 0 8px var(--glow);
+      transition: width 0.08s linear, background 0.4s, box-shadow 0.4s;
     }
 
     /* Multiplier: bigger font */
@@ -1102,6 +1113,7 @@ if (window.innerWidth <= 600) {
   <!-- Main Board -->
   <div class="game-board">
     <div class="game-board-left">
+      <div class="timer-wrap-mob"><div class="timer-bar-mob" id="timerBarMob"></div></div>
       <div class="mob-score-bar">
         <span class="mob-score-val" id="ntbScore">0</span>
       </div>
@@ -1502,18 +1514,24 @@ function startTimerFrom(elapsed) {
     bar.style.width = (pct * 100) + '%';
     multEl.textContent = '\u00d7' + currentMult.toFixed(1);
 
+    // Sync mobile top bar
+    const mobBar = document.getElementById('timerBarMob');
+
     if (currentMult >= 7.0) {
       multEl.className = 'mult-display high';
       bar.style.background = 'var(--glow)';
       bar.style.boxShadow = '0 0 8px color-mix(in srgb, var(--glow) 50%, transparent)';
+      if (mobBar) { mobBar.style.width = (pct * 100) + '%'; mobBar.style.background = 'var(--glow)'; mobBar.style.boxShadow = '0 0 8px var(--glow)'; }
     } else if (currentMult >= 4.0) {
       multEl.className = 'mult-display mid';
       bar.style.background = '#ffaa00';
       bar.style.boxShadow = '0 0 8px rgba(255,170,0,0.5)';
+      if (mobBar) { mobBar.style.width = (pct * 100) + '%'; mobBar.style.background = '#ffaa00'; mobBar.style.boxShadow = '0 0 8px rgba(255,170,0,0.5)'; }
     } else {
       multEl.className = 'mult-display low';
       bar.style.background = '#ff3333';
       bar.style.boxShadow = '0 0 8px rgba(255,51,51,0.6)';
+      if (mobBar) { mobBar.style.width = (pct * 100) + '%'; mobBar.style.background = '#ff3333'; mobBar.style.boxShadow = '0 0 8px rgba(255,51,51,0.6)'; }
     }
 
     if (currentMult <= 1.5) {
