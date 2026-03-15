@@ -1970,6 +1970,10 @@ function toggleInfo() {
 })();
 
 // ===== SHARE =====
+let shareLang = localStorage.getItem('kolumn_lang') || 'en';
+let shareCache = {};
+try { shareCache = JSON.parse(localStorage.getItem('kolumn_share_cache') || '{}'); } catch(e) {}
+
 const SHARE_LANGS = [
   { code: 'en', label: 'EN' },
   { code: 'ru', label: 'RU' },
