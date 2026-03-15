@@ -939,9 +939,9 @@ if (window.innerWidth <= 600) {
       height: 100%;
       border-radius: 3px;
       width: 100%;
-      background: var(--glow);
-      box-shadow: 0 0 8px var(--glow);
-      transition: width 0.08s linear, background 0.4s, box-shadow 0.4s;
+      background: linear-gradient(90deg, #ff3333, #ffaa00, #ffee00, #00e89a, #00d4e8);
+      box-shadow: 0 0 8px rgba(0,212,232,0.6);
+      transition: width 0.08s linear;
     }
 
     /* Multiplier: bigger font */
@@ -1521,17 +1521,17 @@ function startTimerFrom(elapsed) {
       multEl.className = 'mult-display high';
       bar.style.background = 'var(--glow)';
       bar.style.boxShadow = '0 0 8px color-mix(in srgb, var(--glow) 50%, transparent)';
-      if (mobBar) { mobBar.style.width = (pct * 100) + '%'; mobBar.style.background = 'var(--glow)'; mobBar.style.boxShadow = '0 0 8px var(--glow)'; }
+      if (mobBar) { mobBar.style.width = (pct * 100) + '%'; }
     } else if (currentMult >= 4.0) {
       multEl.className = 'mult-display mid';
       bar.style.background = '#ffaa00';
       bar.style.boxShadow = '0 0 8px rgba(255,170,0,0.5)';
-      if (mobBar) { mobBar.style.width = (pct * 100) + '%'; mobBar.style.background = '#ffaa00'; mobBar.style.boxShadow = '0 0 8px rgba(255,170,0,0.5)'; }
+      if (mobBar) { mobBar.style.width = (pct * 100) + '%'; }
     } else {
       multEl.className = 'mult-display low';
       bar.style.background = '#ff3333';
       bar.style.boxShadow = '0 0 8px rgba(255,51,51,0.6)';
-      if (mobBar) { mobBar.style.width = (pct * 100) + '%'; mobBar.style.background = '#ff3333'; mobBar.style.boxShadow = '0 0 8px rgba(255,51,51,0.6)'; }
+      if (mobBar) { mobBar.style.width = (pct * 100) + '%'; }
     }
 
     if (currentMult <= 1.5) {
