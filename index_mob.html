@@ -1136,7 +1136,8 @@ if (window.innerWidth <= 600) {
   <div class="go-title">SYSTEM HALT</div>
   <div class="go-stats" id="finalStats"></div>
   <div id="goLeaderboard"></div>
-  <button class="btn primary" onclick="resetGame()" style="font-size:14px;padding:12px 28px;letter-spacing:3px;margin-top:16px">REBOOT</button>
+  <button class="btn primary" onclick="shareResult()" style="font-size:13px;padding:10px 24px;letter-spacing:2px;margin-top:8px">📤 SHARE</button>
+  <button class="btn primary" onclick="resetGame()" style="font-size:14px;padding:12px 28px;letter-spacing:3px;margin-top:8px">REBOOT</button>
 </div>
 
 <div class="info">
@@ -1965,7 +1966,16 @@ function toggleInfo() {
   }, {passive: false});
 })();
 
-// ===== LEADERBOARD =====
+// ===== SHARE =====
+function shareResult() {
+  const text = `🕹 KOLUMN — набрал ${score.toLocaleString()} очков!\nПобей мой результат: @KolumnGameBot`;
+  const tg = window.Telegram?.WebApp;
+  if (tg) {
+    tg.openTelegramLink(`https://t.me/share/url?url=https://t.me/KolumnGameBot&text=${encodeURIComponent(text)}`);
+  } else {
+    navigator.clipboard?.writeText(text).then(() => alert('Скопировано!')).catch(() => alert(text));
+  }
+}
 const LB_KEY = 'kolumn_top5';
 
 function getLeaderboard() {
