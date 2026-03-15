@@ -35,11 +35,21 @@ window.saveGlobalScore = async function(score) {
 window.loadGlobalTop = async function() {
   const res = await fetch(`${FS_URL}/kolumn_scores?key=${FS_KEY}&pageSize=200`);
   const data = await res.json();
-  const docs = data.documents || [];
-  return docs.map(d => ({
+  const docs = (data.documents || []).map(d => ({
     username: d.fields?.username?.stringValue || 'Player',
     score: parseInt(d.fields?.score?.integerValue || 0),
+    refs: 0,
   })).sort((a, b) => b.score - a.score).slice(0, 10);
+  // Load refs for each unique username
+  const names = [...new Set(docs.map(d => d.username))];
+  await Promise.all(names.map(async name => {
+    try {
+      const r = await fetch(`https://kolumn-worker.constr.workers.dev/player/${encodeURIComponent(name)}`);
+      const p = await r.json();
+      docs.forEach(d => { if (d.username === name) d.refs = p.refs || 0; });
+    } catch(e) {}
+  }));
+  return docs;
 };
 
 window.fbReadyResolve();
@@ -1140,6 +1150,7 @@ if (window.innerWidth <= 600) {
     <button class="btn primary" onclick="shareResult()" style="font-size:13px;padding:10px 20px;letter-spacing:2px;flex:1">📤 SHARE</button>
     <button class="btn" id="shareLangBtn" onclick="cycleLang()" style="font-size:11px;padding:10px 12px;letter-spacing:1px;min-width:40px">EN</button>
   </div>
+  <button class="btn" onclick="inviteFriend()" style="font-size:13px;padding:10px 24px;letter-spacing:2px;margin-top:6px;width:100%">👥 INVITE FRIEND</button>
   <button class="btn primary" onclick="resetGame()" style="font-size:14px;padding:12px 28px;letter-spacing:3px;margin-top:8px">REBOOT</button>
 </div>
 
@@ -1711,20 +1722,10 @@ async function drop() {
       window.cachedTop = top;
       // Update Run screen overlay immediately
       renderOverlayTopFromCache(top);
+      const tgUser = window.Telegram?.WebApp?.initData ? JSON.parse(new URLSearchParams(window.Telegram.WebApp.initData).get('user') || '{}') : {};
+      const myName = tgUser.username || tgUser.first_name || '';
       if (top.length) {
-        let html = '<div class="lb-global-title">🌍 TOP</div><ul class="lb-list">';
-        top.forEach((e, i) => {
-          const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
-          const myName = tgUser ? (tgUser.username || tgUser.first_name || '') : '';
-          const isMe = e.username === myName && e.score === score;
-          html += `<li class="${isMe ? 'lb-new' : ''}">`;
-          html += `<span class="lb-rank">#${i+1}</span>`;
-          html += `<span class="lb-score">${e.score.toLocaleString()}</span>`;
-          html += `<span class="lb-date">${e.username}</span>`;
-          html += '</li>';
-        });
-        html += '</ul>';
-        lb.innerHTML = html;
+        lb.innerHTML = renderTopHTML(top, myName, score);
       } else {
         lb.innerHTML = '';
         renderLeaderboard(lb, score);
@@ -2039,6 +2040,18 @@ function cycleLang() {
   localStorage.setItem('kolumn_share_cache', JSON.stringify(shareCache));
   document.getElementById('shareLangBtn').textContent = SHARE_LANGS.find(l => l.code === shareLang).label;
 }
+function inviteFriend() {
+  const tg = window.Telegram?.WebApp;
+  const params = tg?.initData ? new URLSearchParams(tg.initData) : null;
+  const user = params ? JSON.parse(params.get('user') || '{}') : {};
+  const myName = user.username || user.first_name || 'player';
+  const link = `https://t.me/KolumnGameBot?start=${myName}`;
+  if (tg) {
+    tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent('🕹 Play KOLUMN with me!')}`);
+  } else {
+    navigator.clipboard?.writeText(link).catch(() => {});
+  }
+}
 
 const LB_KEY = 'kolumn_top5';
 
@@ -2101,17 +2114,32 @@ document.getElementById('shareLangBtn').textContent = (SHARE_LANGS.find(l => l.c
 })();
 
 // ===== LOAD TOP ON START =====
+function refBadge(refs) {
+  if (refs >= 10) return ' 👑';
+  if (refs >= 3) return ' 🔥';
+  return '';
+}
+
+function renderTopHTML(top, myName, myScore) {
+  if (!top.length) return '';
+  let html = '<div class="lb-global-title">🌍 TOP</div><ul class="lb-list">';
+  top.forEach((e, i) => {
+    const isMe = e.username === myName && e.score === myScore;
+    const badge = refBadge(e.refs || 0);
+    html += `<li class="${isMe ? 'lb-new' : ''}">`;
+    html += `<span class="lb-rank">#${i+1}</span>`;
+    html += `<span class="lb-score">${e.score.toLocaleString()}</span>`;
+    html += `<span class="lb-date">${e.username}${badge}</span>`;
+    html += '</li>';
+  });
+  html += '</ul>';
+  return html;
+}
+
 function renderOverlayTopFromCache(top) {
   const el = document.getElementById('overlayLeaderboard');
   if (!el || !top.length) return;
-  let html = '<div class="lb-global-title">🌍 TOP</div><ul class="lb-list">';
-  top.forEach((e, i) => {
-    html += `<li><span class="lb-rank">#${i+1}</span>`;
-    html += `<span class="lb-score">${e.score.toLocaleString()}</span>`;
-    html += `<span class="lb-date">${e.username}</span></li>`;
-  });
-  html += '</ul>';
-  el.innerHTML = html;
+  el.innerHTML = renderTopHTML(top, '', 0);
 }
 
 async function renderOverlayTop() {
