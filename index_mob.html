@@ -1136,7 +1136,10 @@ if (window.innerWidth <= 600) {
   <div class="go-title">SYSTEM HALT</div>
   <div class="go-stats" id="finalStats"></div>
   <div id="goLeaderboard"></div>
-  <button class="btn primary" onclick="shareResult()" style="font-size:13px;padding:10px 24px;letter-spacing:2px;margin-top:8px">📤 SHARE</button>
+  <div style="display:flex;gap:6px;margin-top:8px;align-items:center">
+    <button class="btn primary" onclick="shareResult()" style="font-size:13px;padding:10px 20px;letter-spacing:2px;flex:1">📤 SHARE</button>
+    <button class="btn" id="shareLangBtn" onclick="cycleLang()" style="font-size:11px;padding:10px 12px;letter-spacing:1px;min-width:40px">EN</button>
+  </div>
   <button class="btn primary" onclick="resetGame()" style="font-size:14px;padding:12px 28px;letter-spacing:3px;margin-top:8px">REBOOT</button>
 </div>
 
@@ -1967,15 +1970,56 @@ function toggleInfo() {
 })();
 
 // ===== SHARE =====
-function shareResult() {
-  const text = `🕹 KOLUMN — набрал ${score.toLocaleString()} очков!\nПобей мой результат: @KolumnGameBot`;
+const SHARE_LANGS = [
+  { code: 'en', label: 'EN' },
+  { code: 'ru', label: 'RU' },
+  { code: 'ar', label: 'AR' },
+  { code: 'es', label: 'ES' },
+  { code: 'pt', label: 'PT' },
+  { code: 'id', label: 'ID' },
+  { code: 'hi', label: 'HI' },
+  { code: 'fr', label: 'FR' },
+  { code: 'de', label: 'DE' },
+  { code: 'tr', label: 'TR' },
+];
+const SHARE_EN = '🕹 KOLUMN — scored {score} points!\nBeat my score: @KolumnGameBot';
+let shareLang = localStorage.getItem('kolumn_lang') || 'en';
+let shareCache = {};
+try { shareCache = JSON.parse(localStorage.getItem('kolumn_share_cache') || '{}'); } catch(e) {}
+
+async function translateShare(text, lang) {
+  if (lang === 'en') return text;
+  const key = lang + ':' + text.slice(0, 20);
+  if (shareCache[key]) return shareCache[key];
+  try {
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${lang}&dt=t&q=${encodeURIComponent(text)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const translated = data[0].map(s => s[0]).join('');
+    shareCache[key] = translated;
+    localStorage.setItem('kolumn_share_cache', JSON.stringify(shareCache));
+    return translated;
+  } catch(e) { return text; }
+}
+
+async function shareResult() {
+  const base = SHARE_EN.replace('{score}', score.toLocaleString());
+  const text = await translateShare(base, shareLang);
   const tg = window.Telegram?.WebApp;
   if (tg) {
     tg.openTelegramLink(`https://t.me/share/url?url=https://t.me/KolumnGameBot&text=${encodeURIComponent(text)}`);
   } else {
-    navigator.clipboard?.writeText(text).then(() => alert('Скопировано!')).catch(() => alert(text));
+    navigator.clipboard?.writeText(text).catch(() => {});
   }
 }
+
+function cycleLang() {
+  const idx = SHARE_LANGS.findIndex(l => l.code === shareLang);
+  shareLang = SHARE_LANGS[(idx + 1) % SHARE_LANGS.length].code;
+  localStorage.setItem('kolumn_lang', shareLang);
+  document.getElementById('shareLangBtn').textContent = SHARE_LANGS.find(l => l.code === shareLang).label;
+}
+
 const LB_KEY = 'kolumn_top5';
 
 function getLeaderboard() {
@@ -2016,6 +2060,8 @@ function renderLeaderboard(container, currentScore) {
 // setCellSize() removed — setMobileViewport() in <head> handles this correctly
 setTheme('ocean');
 resetGame();
+// Init lang button
+document.getElementById('shareLangBtn').textContent = (SHARE_LANGS.find(l => l.code === shareLang) || SHARE_LANGS[0]).label;
 
 // ===== TELEGRAM INIT =====
 (function() {
