@@ -1704,7 +1704,9 @@ async function drop() {
       const saved = await window.saveGlobalScore(score);
       console.log('saveGlobalScore:', saved);
       const top = await window.loadGlobalTop();
-      window.cachedTop = top; // cache for Run screen
+      window.cachedTop = top;
+      // Update Run screen overlay immediately
+      renderOverlayTopFromCache(top);
       if (top.length) {
         let html = '<div class="lb-global-title">🌍 TOP</div><ul class="lb-list">';
         top.forEach((e, i) => {
@@ -2023,6 +2025,19 @@ resetGame();
 })();
 
 // ===== LOAD TOP ON START =====
+function renderOverlayTopFromCache(top) {
+  const el = document.getElementById('overlayLeaderboard');
+  if (!el || !top.length) return;
+  let html = '<div class="lb-global-title">🌍 TOP</div><ul class="lb-list">';
+  top.forEach((e, i) => {
+    html += `<li><span class="lb-rank">#${i+1}</span>`;
+    html += `<span class="lb-score">${e.score.toLocaleString()}</span>`;
+    html += `<span class="lb-date">${e.username}</span></li>`;
+  });
+  html += '</ul>';
+  el.innerHTML = html;
+}
+
 async function renderOverlayTop() {
   const el = document.getElementById('overlayLeaderboard');
   if (!el) return;
