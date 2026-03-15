@@ -13,8 +13,13 @@ const FS_URL = 'https://firestore.googleapis.com/v1/projects/holepuncher-constr/
 const FS_KEY = ["AIzaSyCqQSfmsv0ru", "NWFoHEG93bTBpJxMbww8nM"].join('');
 
 window.saveGlobalScore = async function(score) {
-  const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
-  const username = tgUser ? (tgUser.username || tgUser.first_name || 'Player') : 'Player';
+  const tg = window.Telegram?.WebApp;
+  let username = 'Player';
+  if (tg?.initData) {
+    const params = new URLSearchParams(tg.initData);
+    const user = JSON.parse(params.get('user') || '{}');
+    username = user.username || user.first_name || 'Player';
+  }
   const res = await fetch(`${FS_URL}/kolumn_scores?key=${FS_KEY}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
