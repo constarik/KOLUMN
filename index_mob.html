@@ -1704,6 +1704,7 @@ async function drop() {
       const saved = await window.saveGlobalScore(score);
       console.log('saveGlobalScore:', saved);
       const top = await window.loadGlobalTop();
+      window.cachedTop = top; // cache for Run screen
       if (top.length) {
         let html = '<div class="lb-global-title">🌍 TOP</div><ul class="lb-list">';
         top.forEach((e, i) => {
@@ -2027,7 +2028,8 @@ async function renderOverlayTop() {
   if (!el) return;
   try {
     await window.fbReady;
-    const top = await window.loadGlobalTop();
+    const top = window.cachedTop || await window.loadGlobalTop();
+    window.cachedTop = null;
     if (!top.length) return;
     let html = '<div class="lb-global-title">🌍 TOP</div><ul class="lb-list">';
     top.forEach((e, i) => {
