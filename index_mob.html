@@ -1114,8 +1114,12 @@ if (window.innerWidth <= 600) {
 <!-- Pause Blackout -->
 <div class="pause-blackout" id="pauseBlackout">
   <div class="pause-blackout-text" id="pauseText">PAUSED</div>
-  <button class="btn primary blink-start" id="runBtn" onclick="runAction()" style="margin-top:24px;font-size:18px;letter-spacing:4px;padding:16px 48px">Run</button>
+  <div style="display:flex;gap:8px;margin-top:24px">
+    <button class="btn" id="modeBtn" onclick="toggleDailyMode()" style="font-size:12px;padding:10px 16px;letter-spacing:2px">FREE</button>
+    <button class="btn primary blink-start" id="runBtn" onclick="runAction()" style="font-size:18px;letter-spacing:4px;padding:16px 32px">Run</button>
+  </div>
   <div id="overlayLeaderboard" style="margin-top:16px;width:100%;max-width:320px"></div>
+  <div id="overlayDailyLeaderboard" style="margin-top:8px;width:100%;max-width:320px"></div>
 </div>
 
 <!-- Info Overlay -->
@@ -1415,9 +1419,32 @@ let bombUsed = false;
 let timer = null, timerStart = 0, pausedElapsed = 0;
 let currentMult = 10.0;
 
+// ===== DAILY MODE =====
+let dailyMode = false;
+let dailySeed = 0;
+let dailyRngState = 0;
+
+function getDailyDate() {
+  const d = new Date();
+  return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function seededRng() {
+  dailyRngState = (dailyRngState * 1664525 + 1013904223) & 0xffffffff;
+  return (dailyRngState >>> 0) / 0x100000000;
+}
+
+function initDailySeed() {
+  dailySeed = parseInt(getDailyDate());
+  dailyRngState = dailySeed;
+}
+
 function generate() {
   const p = [];
-  for (let i = 0; i < COLS; i++) p.push(Math.floor(Math.random() * SYMBOLS));
+  for (let i = 0; i < COLS; i++) {
+    const r = dailyMode ? Math.floor(seededRng() * SYMBOLS) : Math.floor(Math.random() * SYMBOLS);
+    p.push(r);
+  }
   return p;
 }
 
@@ -1717,6 +1744,7 @@ async function drop() {
     try {
       await window.fbReady;
       const saved = await window.saveGlobalScore(score);
+      if (dailyMode && window.saveDailyScore) await window.saveDailyScore(score);
       console.log('saveGlobalScore:', saved);
       const top = await window.loadGlobalTop();
       window.cachedTop = top;
@@ -2040,6 +2068,63 @@ function cycleLang() {
   localStorage.setItem('kolumn_share_cache', JSON.stringify(shareCache));
   document.getElementById('shareLangBtn').textContent = SHARE_LANGS.find(l => l.code === shareLang).label;
 }
+function toggleDailyMode() {
+  dailyMode = !dailyMode;
+  initDailySeed(); // reset seed on toggle
+  const btn = document.getElementById('modeBtn');
+  btn.textContent = dailyMode ? '📅 DAILY' : 'FREE';
+  btn.style.borderColor = dailyMode ? 'var(--glow2)' : '';
+  btn.style.color = dailyMode ? 'var(--glow2)' : '';
+  document.getElementById('pauseText').textContent = dailyMode ? `DAILY ${getDailyDate().slice(4,6)}/${getDailyDate().slice(6)}` : 'KOLUMN';
+  if (dailyMode) renderOverlayDailyTop();
+}
+
+window.loadDailyTop = async function() {
+  const date = getDailyDate();
+  const res = await fetch(`${FS_URL}/kolumn_daily_${date}?key=${FS_KEY}&pageSize=200`);
+  const data = await res.json();
+  const docs = (data.documents || []).map(d => ({
+    username: d.fields?.username?.stringValue || 'Player',
+    score: parseInt(d.fields?.score?.integerValue || 0),
+  })).sort((a, b) => b.score - a.score).slice(0, 10);
+  return docs;
+};
+
+window.saveDailyScore = async function(score) {
+  const tg = window.Telegram?.WebApp;
+  const params = tg?.initData ? new URLSearchParams(tg.initData) : null;
+  const user = params ? JSON.parse(params.get('user') || '{}') : {};
+  const username = user.username || user.first_name || 'Player';
+  const date = getDailyDate();
+  const res = await fetch(`${FS_URL}/kolumn_daily_${date}?key=${FS_KEY}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fields: {
+      username: { stringValue: username },
+      score: { integerValue: String(score) },
+      ts: { timestampValue: new Date().toISOString() },
+    }})
+  });
+  return res.ok;
+};
+
+async function renderOverlayDailyTop() {
+  const el = document.getElementById('overlayDailyLeaderboard');
+  if (!el) return;
+  try {
+    const top = await window.loadDailyTop();
+    if (!top.length) { el.innerHTML = ''; return; }
+    let html = `<div class="lb-global-title">📅 TODAY ${getDailyDate().slice(4,6)}/${getDailyDate().slice(6)}</div><ul class="lb-list">`;
+    top.forEach((e, i) => {
+      html += `<li><span class="lb-rank">#${i+1}</span>`;
+      html += `<span class="lb-score">${e.score.toLocaleString()}</span>`;
+      html += `<span class="lb-date">${e.username}</span></li>`;
+    });
+    html += '</ul>';
+    el.innerHTML = html;
+  } catch(e) { /* silent */ }
+}
+
 function inviteFriend() {
   const tg = window.Telegram?.WebApp;
   const params = tg?.initData ? new URLSearchParams(tg.initData) : null;
@@ -2092,6 +2177,7 @@ function renderLeaderboard(container, currentScore) {
 // ===== MOBILE CELL SIZE =====
 // setCellSize() removed — setMobileViewport() in <head> handles this correctly
 setTheme('ocean');
+initDailySeed();
 resetGame();
 // Init lang button
 document.getElementById('shareLangBtn').textContent = (SHARE_LANGS.find(l => l.code === shareLang) || SHARE_LANGS[0]).label;
@@ -2150,15 +2236,9 @@ async function renderOverlayTop() {
     const top = window.cachedTop || await window.loadGlobalTop();
     window.cachedTop = null;
     if (!top.length) return;
-    let html = '<div class="lb-global-title">🌍 TOP</div><ul class="lb-list">';
-    top.forEach((e, i) => {
-      html += `<li><span class="lb-rank">#${i+1}</span>`;
-      html += `<span class="lb-score">${e.score.toLocaleString()}</span>`;
-      html += `<span class="lb-date">${e.username}</span></li>`;
-    });
-    html += '</ul>';
-    el.innerHTML = html;
+    el.innerHTML = renderTopHTML(top, '', 0);
   } catch(e) { /* silent */ }
+  renderOverlayDailyTop();
 }
 renderOverlayTop();
 </script>
