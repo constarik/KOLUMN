@@ -1482,6 +1482,26 @@ function initDailySeed() {
   dailyRngState = dailySeed;
 }
 
+// Generate prefilled bottom rows from daily seed
+function dailyPrefill() {
+  let state = (dailySeed + 1) | 0;
+  function rng() {
+    state = (state * 1664525 + 1013904223) & 0xffffffff;
+    return (state >>> 0) / 0x100000000;
+  }
+  const newCols = Array.from({length: COLS}, () => []);
+  // Fill bottom 2-3 rows, ~50% density
+  const fillRows = 2 + Math.floor(rng() * 2); // 2 or 3 rows
+  for (let row = 0; row < fillRows; row++) {
+    for (let c = 0; c < COLS; c++) {
+      if (rng() > 0.4) {
+        newCols[c].push(Math.floor(rng() * SYMBOLS));
+      }
+    }
+  }
+  columns = newCols;
+}
+
 function generate() {
   const p = [];
   for (let i = 0; i < COLS; i++) {
@@ -1991,6 +2011,11 @@ function resetGame() {
   gameOver = false; busy = false; paused = true;
   bombUsed = false;
   gameStarted = false;
+  // Daily mode: reset seed and prefill starting grid
+  if (dailyMode) {
+    initDailySeed();
+    dailyPrefill();
+  }
   document.getElementById('bombVal').textContent = '\u25b2';
   document.getElementById('bombVal').className = 'panel-value bomb-ready';
   document.getElementById('pocketBomb').textContent = '\u25b2';
