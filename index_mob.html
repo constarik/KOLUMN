@@ -1982,24 +1982,22 @@ const SHARE_LANGS = [
   { code: 'de', label: 'DE' },
   { code: 'tr', label: 'TR' },
 ];
-const SHARE_EN = '🕹 KOLUMN — scored 123 points!\nBeat my score: @KolumnGameBot';
-const SHARE_EN_PLACEHOLDER = '123 points';
-let shareLang = localStorage.getItem('kolumn_lang') || 'en';
-let shareCache = {};
-try { shareCache = JSON.parse(localStorage.getItem('kolumn_share_cache') || '{}'); } catch(e) {}
+const SHARE_EN = '🕹 scored 123 points!\nBeat my score: @KolumnGameBot';
 
 async function translateShare(lang) {
-  if (lang === 'en') return SHARE_EN;
+  if (lang === 'en') return '🕹 KOLUMN — scored 123 points!\nBeat my score: @KolumnGameBot';
   if (shareCache[lang]) return shareCache[lang];
   try {
     const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${lang}&dt=t&q=${encodeURIComponent(SHARE_EN)}`;
     const res = await fetch(url);
     const data = await res.json();
-    const translated = data[0].map(s => s[0]).join('');
+    let translated = data[0].map(s => s[0]).join('');
+    // Restore brand name after translation
+    translated = 'KOLUMN — ' + translated.replace(/^[🕹\s]+/, '🕹 ');
     shareCache[lang] = translated;
     localStorage.setItem('kolumn_share_cache', JSON.stringify(shareCache));
     return translated;
-  } catch(e) { return SHARE_EN; }
+  } catch(e) { return '🕹 KOLUMN — scored 123 points!\nBeat my score: @KolumnGameBot'; }
 }
 
 async function shareResult() {
@@ -2021,6 +2019,13 @@ function cycleLang() {
   const idx = SHARE_LANGS.findIndex(l => l.code === shareLang);
   shareLang = SHARE_LANGS[(idx + 1) % SHARE_LANGS.length].code;
   localStorage.setItem('kolumn_lang', shareLang);
+  // Clear bad cache entries with wrong brand name
+  Object.keys(shareCache).forEach(k => {
+    if (shareCache[k].includes('КОЛОНКА') || shareCache[k].includes('KOLUMNA') || shareCache[k].includes('KOLONNE')) {
+      delete shareCache[k];
+    }
+  });
+  localStorage.setItem('kolumn_share_cache', JSON.stringify(shareCache));
   document.getElementById('shareLangBtn').textContent = SHARE_LANGS.find(l => l.code === shareLang).label;
 }
 
