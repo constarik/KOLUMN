@@ -1973,6 +1973,13 @@ function toggleInfo() {
 let shareLang = localStorage.getItem('kolumn_lang') || 'en';
 let shareCache = {};
 try { shareCache = JSON.parse(localStorage.getItem('kolumn_share_cache') || '{}'); } catch(e) {}
+// Clear bad cache entries on load
+Object.keys(shareCache).forEach(k => {
+  if (shareCache[k].includes('КОЛОНКА') || shareCache[k].includes('KOLUMNA') || shareCache[k].includes('KOLONNE')) {
+    delete shareCache[k];
+  }
+});
+localStorage.setItem('kolumn_share_cache', JSON.stringify(shareCache));
 
 const SHARE_LANGS = [
   { code: 'en', label: 'EN' },
