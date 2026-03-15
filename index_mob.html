@@ -9,17 +9,22 @@
 window.fbReadyResolve = null;
 window.fbReady = new Promise(r => { window.fbReadyResolve = r; });
 
-const WORKER_URL = 'https://kolumn-worker.constr.workers.dev';
 const FS_URL = 'https://firestore.googleapis.com/v1/projects/holepuncher-constr/databases/(default)/documents';
 const FS_KEY = ["AIzaSyCqQSfmsv0ru", "NWFoHEG93bTBpJxMbww8nM"].join('');
 
-window.saveGlobalScore = async function(initData, score) {
-  const res = await fetch(WORKER_URL + '/score', {
+window.saveGlobalScore = async function(score) {
+  const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+  const username = tgUser ? (tgUser.username || tgUser.first_name || 'Player') : 'Player';
+  const res = await fetch(`${FS_URL}/kolumn_scores?key=${FS_KEY}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ initData, score })
+    body: JSON.stringify({ fields: {
+      username: { stringValue: username },
+      score: { integerValue: String(score) },
+      ts: { timestampValue: new Date().toISOString() },
+    }})
   });
-  return res.json();
+  return res.ok;
 };
 
 window.loadGlobalTop = async function() {
@@ -1691,9 +1696,8 @@ async function drop() {
     lb.innerHTML = '<div class="lb-global-title">⏳ loading...</div>';
     try {
       await window.fbReady;
-      const initData = window.Telegram?.WebApp?.initData || '';
-      const saveResult = await window.saveGlobalScore(initData, score);
-      console.log('saveGlobalScore result:', JSON.stringify(saveResult));
+      const saved = await window.saveGlobalScore(score);
+      console.log('saveGlobalScore:', saved);
       const top = await window.loadGlobalTop();
       if (top.length) {
         let html = '<div class="lb-global-title">🌍 TOP</div><ul class="lb-list">';
