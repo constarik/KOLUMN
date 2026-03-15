@@ -464,6 +464,36 @@ if (window.innerWidth <= 600) {
     100% { transform: scale(1); }
   }
 
+  /* Tetris drop trail */
+  .g-cell.drop-trail {
+    animation: dropTrail 0.18s ease forwards;
+  }
+  @keyframes dropTrail {
+    0%  { background: rgba(0,212,232,0.35); border-color: rgba(0,212,232,0.8); }
+    100%{ background: transparent; border-color: rgba(0,212,232,0.15); }
+  }
+
+  /* Chain combo popup */
+  .combo-popup {
+    position: absolute;
+    top: 35%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 22px; font-weight: 900;
+    color: gold; text-shadow: 0 0 24px gold;
+    letter-spacing: 3px;
+    pointer-events: none; opacity: 0; z-index: 50;
+    white-space: nowrap;
+  }
+  .combo-popup.pop {
+    animation: comboPop 1.2s ease forwards;
+  }
+  @keyframes comboPop {
+    0%  { opacity: 1; transform: translate(-50%,-50%) scale(0.8); }
+    40% { opacity: 1; transform: translate(-50%,-80%) scale(1.4); }
+    100%{ opacity: 0; transform: translate(-50%,-120%) scale(1); }
+  }
+
   .g-cell.bomb-hit {
     background: #ff2200 !important;
     border-color: #ff6600 !important;
@@ -1079,6 +1109,7 @@ if (window.innerWidth <= 600) {
       <div style="position:relative">
         <div class="grid" id="grid"></div>
         <div class="touch-zone" id="touchZone"></div>
+        <div class="combo-popup" id="comboPopup"></div>
       </div>
       <div class="controls">
         <button class="btn btn-rotate" onclick="rotate(-1)">&#9666;</button>
@@ -1576,6 +1607,36 @@ function rotate(dir) {
 // ===== DROP =====
 const delay = ms => new Promise(r => setTimeout(r, ms));
 
+// Tetris-style drop trail animation
+async function dropAnimation() {
+  const cellSize = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--cell-size')) || 48;
+  const landRow = [];
+  for (let c = 0; c < COLS; c++) {
+    landRow.push(columns[c].length < MAX_HEIGHT ? MAX_HEIGHT - columns[c].length - 1 : 0);
+  }
+  const maxRow = Math.max(...landRow);
+  for (let r = 0; r <= maxRow; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const idx = r * COLS + c;
+      const cells = document.getElementById('grid').children;
+      if (cells[idx]) {
+        cells[idx].classList.add('drop-trail');
+        setTimeout(() => cells[idx].classList.remove('drop-trail'), 220);
+      }
+    }
+    await delay(55);
+  }
+}
+
+function showCombo(text) {
+  const el = document.getElementById('comboPopup');
+  if (!el) return;
+  el.textContent = text;
+  el.classList.remove('pop');
+  void el.offsetWidth;
+  el.classList.add('pop');
+}
+
 async function drop() {
   if (!gameStarted || gameOver || busy || paused) return;
   busy = true;
@@ -1602,6 +1663,7 @@ async function drop() {
   if (matched > 0) SFX.match(matched);
   else SFX.stack();
 
+  await dropAnimation();
   renderGrid(matchResults);
   await delay(400);
 
@@ -1642,6 +1704,7 @@ async function drop() {
     score += Math.round(chainCols.size * chainCols.size * 5 * dropMult);
     totalCleared += chainCols.size;
     totalChains++;
+    showCombo(`CHAIN ×${chainCols.size}`);
     renderAll();
     await delay(200);
   }
